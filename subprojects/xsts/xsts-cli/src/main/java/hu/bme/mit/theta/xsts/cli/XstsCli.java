@@ -4,9 +4,18 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
+import hu.bme.mit.theta.analysis.InitFunc;
+import hu.bme.mit.theta.analysis.LTS;
 import hu.bme.mit.theta.analysis.Trace;
+import hu.bme.mit.theta.analysis.TransFunc;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.bmc.IterativeBmcChecker;
 import hu.bme.mit.theta.analysis.algorithm.cegar.CegarStatistics;
+import hu.bme.mit.theta.analysis.algorithm.imc.ImcChecker;
+import hu.bme.mit.theta.analysis.expl.ExplPrec;
+import hu.bme.mit.theta.analysis.expl.ExplState;
+import hu.bme.mit.theta.analysis.expl.ExplStmtAnalysis;
+import hu.bme.mit.theta.analysis.expr.StmtAction;
 import hu.bme.mit.theta.analysis.expr.refinement.PruneStrategy;
 import hu.bme.mit.theta.analysis.utils.ArgVisualizer;
 import hu.bme.mit.theta.analysis.utils.TraceVisualizer;
@@ -18,6 +27,15 @@ import hu.bme.mit.theta.common.table.BasicTableWriter;
 import hu.bme.mit.theta.common.table.TableWriter;
 import hu.bme.mit.theta.common.visualization.Graph;
 import hu.bme.mit.theta.common.visualization.writer.GraphvizWriter;
+import hu.bme.mit.theta.core.stmt.SequenceStmt;
+import hu.bme.mit.theta.core.type.Expr;
+import hu.bme.mit.theta.core.type.booltype.BoolType;
+import hu.bme.mit.theta.core.utils.PathUtils;
+import hu.bme.mit.theta.core.utils.StmtUnfoldResult;
+import hu.bme.mit.theta.core.utils.StmtUtils;
+import hu.bme.mit.theta.core.utils.indexings.VarIndexing;
+import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
+import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
 import hu.bme.mit.theta.xsts.XSTS;
 import hu.bme.mit.theta.xsts.analysis.XstsAction;
@@ -27,14 +45,21 @@ import hu.bme.mit.theta.xsts.analysis.concretizer.XstsTraceConcretizerUtil;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfig;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfigBuilder;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfigBuilder.*;
+import hu.bme.mit.theta.xsts.analysis.initprec.XstsEmptyInitPrec;
+import hu.bme.mit.theta.xsts.analysis.initprec.XstsPropInitPrec;
 import hu.bme.mit.theta.xsts.dsl.XstsDslManager;
 import hu.bme.mit.theta.xsts.pnml.PnmlParser;
 import hu.bme.mit.theta.xsts.pnml.PnmlToXSTS;
 import hu.bme.mit.theta.xsts.pnml.elements.PnmlNet;
 
 import java.io.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.And;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 
 public class XstsCli {
 
@@ -101,6 +126,11 @@ public class XstsCli {
 
 	@Parameter(names = {"--visualize"}, description = "Write proof or counterexample to file in dot format")
 	String dotfile = null;
+
+	//////////// Experimentall IMC options ////////////
+
+	@Parameter(names = "--imc", description = "Use experimental IMC algorithm")
+	boolean bmc = false;
 
 	private Logger logger;
 
@@ -200,9 +230,20 @@ public class XstsCli {
 
 	private XstsConfig<?, ?, ?> buildConfiguration(final XSTS xsts) throws Exception {
 		try {
-			return new XstsConfigBuilder(domain, refinement, Z3SolverFactory.getInstance())
-					.maxEnum(maxEnum).autoExpl(autoExpl).initPrec(initPrec).pruneStrategy(pruneStrategy)
-					.search(search).predSplit(predSplit).optimizeStmts(optimizeStmts).logger(logger).build(xsts);
+			if (bmc) {
+				final VarIndexing nullIndexing = VarIndexingFactory.indexing(0);
+				final StmtUnfoldResult res = StmtUtils.toExpr(xsts.getInit(), nullIndexing);
+				final Expr<BoolType> initRel = And(PathUtils.unfold(xsts.getInitFormula(), nullIndexing), PathUtils.unfold(And(res.getExprs()), nullIndexing));
+				final VarIndexing initIndexing = res.getIndexing();
+
+				final StmtAction transRel = XstsAction.create(SequenceStmt.of(List.of(xsts.getEnv(), xsts.getTran())));
+				final ImcChecker<XstsState<ExplState>, StmtAction, ExplPrec> imcChecker = ImcChecker.create(initRel, initIndexing, transRel, xsts.getProp(), v -> XstsState.of(ExplState.of(v),false, true), Z3SolverFactory.getInstance().createItpSolver(), logger, 100);
+				return XstsConfig.create(imcChecker, initPrec.builder.createExpl(xsts));
+			} else {
+				return new XstsConfigBuilder(domain, refinement, Z3SolverFactory.getInstance())
+						.maxEnum(maxEnum).autoExpl(autoExpl).initPrec(initPrec).pruneStrategy(pruneStrategy)
+						.search(search).predSplit(predSplit).optimizeStmts(optimizeStmts).logger(logger).build(xsts);
+			}
 		} catch (final Exception ex) {
 			throw new Exception("Could not create configuration: " + ex.getMessage(), ex);
 		}
