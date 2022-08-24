@@ -67,6 +67,9 @@ public class XstsCli {
 	private final String[] args;
 	private final TableWriter writer;
 
+	@Parameter(names = {"--algorithm"}, description = "Algorithm to use")
+	Algorithm algorithm = Algorithm.CEGAR;
+
 	@Parameter(names = {"--domain"}, description = "Abstract domain")
 	Domain domain = Domain.PRED_CART;
 
@@ -127,10 +130,7 @@ public class XstsCli {
 	@Parameter(names = {"--visualize"}, description = "Write proof or counterexample to file in dot format")
 	String dotfile = null;
 
-	//////////// Experimentall IMC options ////////////
-
-	@Parameter(names = "--imc", description = "Use experimental IMC algorithm")
-	boolean bmc = false;
+	//////////// Experimental IMC options ////////////
 
 	@Parameter(names = "--itp", description = "Interpolation strategy")
 	InterpolationStrategy interpolationStrategy = InterpolationStrategy.BW;
@@ -233,7 +233,7 @@ public class XstsCli {
 
 	private XstsConfig<?, ?, ?> buildConfiguration(final XSTS xsts) throws Exception {
 		try {
-			if (bmc) {
+			if (algorithm == Algorithm.IMC) {
 				final VarIndexing nullIndexing = VarIndexingFactory.indexing(0);
 				final StmtUnfoldResult res = StmtUtils.toExpr(xsts.getInit(), nullIndexing);
 				final Expr<BoolType> initRel = And(PathUtils.unfold(xsts.getInitFormula(), nullIndexing), PathUtils.unfold(And(res.getExprs()), nullIndexing));
