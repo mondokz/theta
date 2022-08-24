@@ -161,6 +161,11 @@ public class XstsConfigBuilder {
 		ON, OFF
 	}
 
+	public enum InterpolationStrategy{
+		FW,
+		BW
+	}
+
 	private Logger logger = NullLogger.getInstance();
 	private final SolverFactory solverFactory;
 	private final Domain domain;
