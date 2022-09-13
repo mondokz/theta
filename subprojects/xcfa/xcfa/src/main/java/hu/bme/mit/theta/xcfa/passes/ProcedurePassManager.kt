@@ -30,3 +30,5 @@ class CPasses : ProcedurePassManager(listOf(
 ))
 
 class LitmusPasses : ProcedurePassManager(emptyList())
+
+class GammaPasses : ProcedurePassManager(emptyList())

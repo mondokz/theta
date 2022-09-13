@@ -7,10 +7,8 @@ import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
 import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
-import hu.bme.mit.theta.xcfa.model.XcfaEdge;
-import hu.bme.mit.theta.xcfa.model.XcfaLabel;
-import hu.bme.mit.theta.xcfa.model.XcfaLocation;
-import hu.bme.mit.theta.xcfa.model.XcfaProcedure;
+import hu.bme.mit.theta.xcfa.model.*;
+import hu.bme.mit.theta.xcfa.passes.GammaPasses;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,13 +23,11 @@ import static hu.bme.mit.theta.core.type.inttype.IntExprs.Int;
 public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>> {
 
     public StatechartParserVisitor() {
-        builder = XcfaProcedure.builder();
-        XcfaLocation finalLoc = XcfaLocation.create("final");
-        builder.addLoc(finalLoc);
-        builder.setFinalLoc(finalLoc);
+        builder = new XcfaProcedureBuilder("gamma", new GammaPasses());
+        builder.createFinalLoc();
     }
 
-    public XcfaProcedure.Builder getBuilder() {
+    public XcfaProcedureBuilder getBuilder() {
         for (GammaParser.RuleTransitionContext transitionContext : transitionContexts) {
             handleRuleTransition(transitionContext);
         }
@@ -40,7 +36,7 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
 
     private final List<GammaParser.RuleTransitionContext> transitionContexts = new ArrayList<>();
 
-    private final XcfaProcedure.Builder builder;
+    private final XcfaProcedureBuilder builder;
 
     private final Map<String, XcfaLocation> inLocationLut = new LinkedHashMap<>();
 
@@ -93,7 +89,7 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
 
         String name = ctx.RULE_ID().getText();
         if (subStates.size() == 0) {
-            XcfaLocation xcfaLocation = XcfaLocation.create(name);
+            XcfaLocation xcfaLocation = new XcfaLocation(name);
             inLocationLut.put(name, xcfaLocation);
             outLocationLut.putIfAbsent(name, new ArrayList<>());
             outLocationLut.get(name).add(xcfaLocation);
@@ -111,12 +107,11 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
     @Override
     public List<XcfaLocation> visitRuleInitialState(GammaParser.RuleInitialStateContext ctx) {
         String name = ctx.RULE_ID().getText();
-        XcfaLocation xcfaLocation = XcfaLocation.create(name);
+        builder.createInitLoc();
+        XcfaLocation xcfaLocation = builder.getInitLoc();
         inLocationLut.put(name, xcfaLocation);
         outLocationLut.putIfAbsent(name, new ArrayList<>());
         outLocationLut.get(name).add(xcfaLocation);
-        builder.addLoc(xcfaLocation);
-        builder.setInitLoc(xcfaLocation);
         return super.visitRuleInitialState(ctx);
     }
 
@@ -138,18 +133,17 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
 
         ExpressionParserVisitor expressionParserVisitor = new ExpressionParserVisitor(varLut);
         StatementParserVisitor statementParserVisitor = new StatementParserVisitor(varLut);
-        List<Stmt> actionList = new ArrayList<>();
+        List<XcfaLabel> actionList = new ArrayList<>();
         if (ctx.ruleExpression() != null) {
             Expr<?> guard = ctx.ruleExpression().accept(expressionParserVisitor);
-            actionList.add(Assume((Expr<BoolType>) guard));
+            actionList.add(new StmtLabel(Assume((Expr<BoolType>) guard)));
         }
 
         for (GammaParser.RuleActionContext ruleActionContext : ctx.ruleAction()) {
             actionList.add(ruleActionContext.accept(statementParserVisitor));
         }
-        Stmt action = SequenceStmt.of(actionList);
         for (XcfaLocation xcfaLocation : locationFrom) {
-            XcfaEdge edge = XcfaEdge.of(xcfaLocation, locationTo, List.of(XcfaLabel.StmtXcfaLabel.of(action)));
+            XcfaEdge edge = new XcfaEdge(xcfaLocation, locationTo, new SequenceLabel(actionList));
             builder.addEdge(edge);
         }
 

@@ -1,6 +1,5 @@
 package hu.bme.mit.theta.gamma.frontend.dsl;
 
-import hu.bme.mit.theta.xcfa.passes.XcfaPassManager;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -11,9 +10,6 @@ public class GammaDslManagerTest {
 
     @Test
     public void createCfa() throws IOException {
-        XcfaPassManager.clearXCFAPasses();
-        XcfaPassManager.clearProcedurePasses();
-        XcfaPassManager.clearProcessPasses();
 
         String statechart = """
                 statechart System_TimerStatechart [
@@ -47,6 +43,6 @@ public class GammaDslManagerTest {
                     transition from Paused to Ticking when startB.in_StartTimer
                 }
                 """;
-        System.err.println(GammaDslManager.createCfa(statechart).toDot());
+        System.err.println(GammaDslManager.createCfa(statechart));
     }
 }

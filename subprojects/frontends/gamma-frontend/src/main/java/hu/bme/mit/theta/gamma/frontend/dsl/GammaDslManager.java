@@ -17,10 +17,7 @@ package hu.bme.mit.theta.gamma.frontend.dsl;
 
 import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaLexer;
 import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
-import hu.bme.mit.theta.xcfa.model.XCFA;
-import hu.bme.mit.theta.xcfa.model.XcfaLocation;
-import hu.bme.mit.theta.xcfa.model.XcfaProcedure;
-import hu.bme.mit.theta.xcfa.model.XcfaProcess;
+import hu.bme.mit.theta.xcfa.model.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -29,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public final class GammaDslManager {
 
@@ -36,7 +34,7 @@ public final class GammaDslManager {
     }
 
     public static XCFA createCfa(final String inputString) throws IOException {
-        final InputStream stream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8.name()));
+        final InputStream stream = new ByteArrayInputStream(inputString.getBytes(StandardCharsets.UTF_8));
         return createCfa(stream);
     }
 
@@ -50,15 +48,11 @@ public final class GammaDslManager {
         final GammaParser.RuleSynchronousStatechartDefinitionContext context = parser.ruleSynchronousStatechartDefinition();
         StatechartParserVisitor statechartParserVisitor = new StatechartParserVisitor();
         context.accept(statechartParserVisitor);
-        XCFA.Builder xcfaBuilder = XCFA.builder();
-        XcfaProcess.Builder xcfaProcessBuilder = XcfaProcess.builder();
-        xcfaBuilder.addProcess(xcfaProcessBuilder);
-        xcfaBuilder.setMainProcess(xcfaProcessBuilder);
+        XcfaBuilder xcfaBuilder = new XcfaBuilder("gamma");
 
-        XcfaProcedure.Builder builder = statechartParserVisitor.getBuilder();
-        xcfaProcessBuilder.addProcedure(builder);
-        xcfaProcessBuilder.setMainProcedure(builder);
-
+        XcfaProcedureBuilder builder = statechartParserVisitor.getBuilder();
+        xcfaBuilder.addProcedure(builder);
+        xcfaBuilder.addEntryPoint(builder, List.of());
         return xcfaBuilder.build();
     }
 
