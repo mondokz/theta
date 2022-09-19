@@ -1,13 +1,18 @@
-package hu.bme.mit.theta.gamma.frontend.dsl;
+package hu.bme.mit.theta.xcfa.cli;
 
+import hu.bme.mit.theta.analysis.Action;
+import hu.bme.mit.theta.analysis.State;
+import hu.bme.mit.theta.analysis.Trace;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
-import hu.bme.mit.theta.xcfa.model.*;
+import hu.bme.mit.theta.gamma.frontend.dsl.GammaDslManager;
+import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
+import hu.bme.mit.theta.xcfa.model.VisualizerKt;
+import hu.bme.mit.theta.xcfa.model.XCFA;
 import org.junit.Test;
 
 import java.io.IOException;
-
-import static org.junit.Assert.*;
+import java.util.List;
 
 public class GammaDslManagerTest {
 
@@ -48,5 +53,9 @@ public class GammaDslManagerTest {
                 """;
         XCFA xcfa = GammaDslManager.createCfa(statechart);
         System.err.println(VisualizerKt.toDot(xcfa));
+        Logger logger = new ConsoleLogger(Logger.Level.INFO);
+        XcfaTracegenConfig tracegenConfig = new XcfaTracegenConfig();
+        tracegenConfig.check(xcfa, logger);
+        List<? extends Trace<? extends State, ? extends Action>> traces = tracegenConfig.getTraces();
     }
 }

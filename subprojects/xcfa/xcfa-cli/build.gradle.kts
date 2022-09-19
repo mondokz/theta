@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":theta-solver-smtlib"))
     implementation(project(":theta-solver"))
     implementation(project(":theta-c-frontend"))
+    implementation(project(":theta-gamma-frontend"))
     implementation(project(":theta-grammar"))
     implementation("com.zaxxer:nuprocess:2.0.2")
 }

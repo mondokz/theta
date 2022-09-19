@@ -9,12 +9,12 @@ import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
 import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
 import hu.bme.mit.theta.xcfa.model.*;
 import hu.bme.mit.theta.xcfa.passes.GammaPasses;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static hu.bme.mit.theta.core.decl.Decls.Var;
 import static hu.bme.mit.theta.core.stmt.Stmts.Assume;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Bool;
@@ -23,7 +23,7 @@ import static hu.bme.mit.theta.core.type.inttype.IntExprs.Int;
 public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>> {
 
     public StatechartParserVisitor() {
-        builder = new XcfaProcedureBuilder("gamma", new GammaPasses());
+        builder = new XcfaProcedureBuilder("gamma", new GammaPasses()); // TODO proper name
         builder.createFinalLoc();
     }
 
@@ -31,6 +31,7 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
         for (GammaParser.RuleTransitionContext transitionContext : transitionContexts) {
             handleRuleTransition(transitionContext);
         }
+        varLut.forEach((s, varDecl) -> builder.addVar(varDecl));
         return builder;
     }
 
@@ -129,11 +130,16 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
         XcfaLocation locationTo = inLocationLut.get(to);
 
         EventParserVisitor eventParserVisitor = new EventParserVisitor();
-        //String eventName = checkNotNull(ctx.ruleTrigger().accept(eventParserVisitor));
+        List<XcfaLabel> actionList = new ArrayList<>();
+
+        String eventName = null;
+        if(ctx.ruleTrigger()!=null) {
+            eventName = ctx.ruleTrigger().accept(eventParserVisitor);
+            actionList.add(new FenceLabel(Collections.singleton(eventName)));
+        }
 
         ExpressionParserVisitor expressionParserVisitor = new ExpressionParserVisitor(varLut);
         StatementParserVisitor statementParserVisitor = new StatementParserVisitor(varLut);
-        List<XcfaLabel> actionList = new ArrayList<>();
         if (ctx.ruleExpression() != null) {
             Expr<?> guard = ctx.ruleExpression().accept(expressionParserVisitor);
             actionList.add(new StmtLabel(Assume((Expr<BoolType>) guard)));

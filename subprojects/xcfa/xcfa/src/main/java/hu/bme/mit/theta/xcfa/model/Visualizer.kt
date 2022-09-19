@@ -35,6 +35,11 @@ fun XCFA.toDot() : String {
 fun XcfaProcedure.toDot() : String {
     val builder = StringBuilder()
     builder.appendLine("label=\"$name\";")
+
+    builder.append("vars[label=\"vars in $name: ")
+    vars.forEach{ builder.append(it.name + " (" + it.type + "), ") }
+    builder.append("\"];\n")
+
     locs.forEach { builder.appendLine(it.name + "[];") }
     edges.forEach { builder.appendLine(it.source.name + " -> " + it.target.name + "[label=\"" + it.label.toString() + "\"];") }
     return builder.toString()
