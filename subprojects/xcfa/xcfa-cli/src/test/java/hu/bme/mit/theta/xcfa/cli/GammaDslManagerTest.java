@@ -57,5 +57,9 @@ public class GammaDslManagerTest {
         XcfaTracegenConfig tracegenConfig = new XcfaTracegenConfig();
         tracegenConfig.check(xcfa, logger);
         List<? extends Trace<? extends State, ? extends Action>> traces = tracegenConfig.getTraces();
+        for (Trace<? extends State, ? extends Action> trace : traces) {
+            System.out.println(trace);
+            System.out.println("----------------");
+        }
     }
 }

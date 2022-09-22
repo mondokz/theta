@@ -126,6 +126,10 @@ data class FenceLabel(
     override fun toString(): String {
         return "F[$labels]"
     }
+
+    override fun toStmt(): Stmt {
+        return Skip()
+    }
 }
 
 data class SequenceLabel(

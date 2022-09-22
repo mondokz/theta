@@ -51,7 +51,7 @@ public class TraceGenChecker <S extends ExprState, A extends ExprAction, P exten
         // TODO XSTS SPECIFIC for now! collecting nodes that look like there should be traces to it, but there isn't
         // this is due to the trans-env-trans-env nature of XSTS (there are nodes without outgoing edges that are covered that are not deadlock states in reality)
         List<ArgNode<S,A>> badNodes = new ArrayList<>();
-        arg.getInitNodes().forEach(node -> removeBackwardsCoveredBy(node, badNodes));
+        //arg.getInitNodes().forEach(node -> removeBackwardsCoveredBy(node, badNodes));
 
         // getting the traces
         List<ArgNode<S, A>> endNodes = arg.getNodes().filter(saArgNode -> saArgNode.isLeaf()).collect(Collectors.toList());
@@ -74,7 +74,7 @@ public class TraceGenChecker <S extends ExprState, A extends ExprAction, P exten
         traces.addAll(argTraces.stream().map(argTrace -> Tuple2.of(argTrace.toTrace(), argTrace.node(argTrace.nodes().size()-1))).toList());
 
         // filter 2, optional, to get full traces even where there is coverage
-        boolean getFullTraces = true; // TODO make this a configuration option
+        boolean getFullTraces = false; // TODO make this a configuration option
         if(getFullTraces) {
             List<ArgNode<S, A>> remainingCoveredEndNodes;
             List<ArgNode<S, A>> coveredEndNodes = computeCoveredEndNodes(filteredEndNodes);
