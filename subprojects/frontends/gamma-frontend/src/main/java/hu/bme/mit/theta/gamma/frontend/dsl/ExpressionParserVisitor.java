@@ -2,8 +2,8 @@ package hu.bme.mit.theta.gamma.frontend.dsl;
 
 import hu.bme.mit.theta.core.decl.VarDecl;
 import hu.bme.mit.theta.core.type.Expr;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
+import hu.bme.mit.theta.core.type.anytype.RefExpr;
+import hu.bme.mit.theta.gamma.frontend.dsl.gen.*;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -47,5 +47,12 @@ public class ExpressionParserVisitor extends GammaBaseVisitor<Expr<?>> {
     @Override
     public Expr<?> visitRuleTrueExpression(GammaParser.RuleTrueExpressionContext ctx) {
         return False();
+    }
+
+    @Override
+    public Expr<?> visitRuleAssignableDirectReferenceExpression(GammaParser.RuleAssignableDirectReferenceExpressionContext ctx) {
+        if(varLut.containsKey(ctx.getText())) {
+            return RefExpr.of(varLut.get(ctx.getText()));
+        } else throw new RuntimeException("Direct reference to unknown variable: " + ctx.getText());
     }
 }

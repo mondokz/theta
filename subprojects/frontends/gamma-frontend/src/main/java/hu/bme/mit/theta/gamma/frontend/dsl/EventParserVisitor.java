@@ -1,8 +1,6 @@
 package hu.bme.mit.theta.gamma.frontend.dsl;
 
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
-import hu.bme.mit.theta.xcfa.model.XcfaLocation;
+import hu.bme.mit.theta.gamma.frontend.dsl.gen.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;

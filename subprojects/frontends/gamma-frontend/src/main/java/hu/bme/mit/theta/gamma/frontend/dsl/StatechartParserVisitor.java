@@ -1,20 +1,14 @@
 package hu.bme.mit.theta.gamma.frontend.dsl;
 
 import hu.bme.mit.theta.core.decl.VarDecl;
-import hu.bme.mit.theta.core.stmt.SequenceStmt;
-import hu.bme.mit.theta.core.stmt.Stmt;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
+import hu.bme.mit.theta.gamma.frontend.dsl.gen.*;
 import hu.bme.mit.theta.xcfa.model.*;
 import hu.bme.mit.theta.xcfa.passes.GammaPasses;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static hu.bme.mit.theta.core.decl.Decls.Var;
 import static hu.bme.mit.theta.core.stmt.Stmts.Assume;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Bool;
@@ -42,7 +36,8 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
     private final Map<String, XcfaLocation> inLocationLut = new LinkedHashMap<>();
 
     private final Map<String, List<XcfaLocation>> outLocationLut = new LinkedHashMap<>();
-
+    private final Map<String, List<XcfaLabel>> locationEntryActionLut = new LinkedHashMap<>();
+    private final Map<String, List<XcfaLabel>> locationExitActionLut = new LinkedHashMap<>();
     private final Map<String, VarDecl<?>> varLut = new LinkedHashMap<>();
 
     @Override
@@ -88,12 +83,25 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
             subStates.addAll(locations);
         }
 
-        String name = ctx.RULE_ID().getText();
+        ActionParserVisitor actionParserVisitor = new ActionParserVisitor(varLut);
+        ArrayList<XcfaLabel> entryLabels = new ArrayList<>();
+        for (GammaParser.RuleEntryActionContext ruleEntryActionContext : ctx.ruleEntryAction()) {
+            entryLabels.addAll(ruleEntryActionContext.accept(actionParserVisitor));
+        }
+
+        ArrayList<XcfaLabel> exitLabels = new ArrayList<>();
+        for (GammaParser.RuleExitActionContext ruleExitActionContext : ctx.ruleExitAction()) {
+            exitLabels.addAll(ruleExitActionContext.accept(actionParserVisitor));
+        }
+
+        String name = ctx.RULE_ID().getText(); // TODO we need the qualified names to properly handle entry/exit labels
         if (subStates.size() == 0) {
             XcfaLocation xcfaLocation = new XcfaLocation(name);
             inLocationLut.put(name, xcfaLocation);
             outLocationLut.putIfAbsent(name, new ArrayList<>());
             outLocationLut.get(name).add(xcfaLocation);
+            locationEntryActionLut.put(name, entryLabels);
+            locationExitActionLut.put(name, exitLabels);
             builder.addLoc(xcfaLocation);
             subStates.add(xcfaLocation);
         } else {
@@ -149,7 +157,16 @@ public class StatechartParserVisitor extends GammaBaseVisitor<List<XcfaLocation>
             actionList.add(ruleActionContext.accept(statementParserVisitor));
         }
         for (XcfaLocation xcfaLocation : locationFrom) {
-            XcfaEdge edge = new XcfaEdge(xcfaLocation, locationTo, new SequenceLabel(actionList));
+            List<XcfaLabel> actions = new ArrayList<>();
+            if(locationExitActionLut.containsKey(xcfaLocation.getName())) { // TODO does not work properly with composite states
+                actions.addAll(locationExitActionLut.get(xcfaLocation.getName()));
+            }
+            actions.addAll(actionList);
+            if(locationEntryActionLut.containsKey(locationTo.getName())) { // TODO does not work properly with composite states
+                actions.addAll(locationEntryActionLut.get(locationTo.getName()));
+            }
+
+            XcfaEdge edge = new XcfaEdge(xcfaLocation, locationTo, new SequenceLabel(actions));
             builder.addEdge(edge);
         }
 

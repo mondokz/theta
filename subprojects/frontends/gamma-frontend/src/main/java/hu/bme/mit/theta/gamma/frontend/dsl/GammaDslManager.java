@@ -15,8 +15,7 @@
  */
 package hu.bme.mit.theta.gamma.frontend.dsl;
 
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaLexer;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
+import hu.bme.mit.theta.gamma.frontend.dsl.gen.*;
 import hu.bme.mit.theta.xcfa.model.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;

@@ -6,7 +6,6 @@ import hu.bme.mit.theta.analysis.Trace;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.gamma.frontend.dsl.GammaDslManager;
-import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
 import hu.bme.mit.theta.xcfa.model.VisualizerKt;
 import hu.bme.mit.theta.xcfa.model.XCFA;
 import org.junit.Test;
@@ -38,7 +37,9 @@ public class GammaDslManagerTest {
                                             state SubState
                                          }
                                      }
-                                     state Paused
+                                     state Paused {
+                                        entry / time := 0;
+                                     }
                                      initial InitialTimerStatesOfSubTimerStates
                                  }
                                  transition from E1 to SubState

@@ -1,11 +1,9 @@
 package hu.bme.mit.theta.gamma.frontend.dsl;
 
 import hu.bme.mit.theta.core.decl.VarDecl;
-import hu.bme.mit.theta.core.stmt.Stmt;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.anytype.RefExpr;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaBaseVisitor;
-import hu.bme.mit.theta.gamma.frontend.dsl.gen.GammaParser;
+import hu.bme.mit.theta.gamma.frontend.dsl.gen.*;
 import hu.bme.mit.theta.xcfa.model.StmtLabel;
 import hu.bme.mit.theta.xcfa.model.XcfaLabel;
 
@@ -16,7 +14,6 @@ import static hu.bme.mit.theta.core.stmt.Stmts.Assign;
 import static hu.bme.mit.theta.core.utils.TypeUtils.cast;
 
 public class StatementParserVisitor extends GammaBaseVisitor<XcfaLabel> {
-
     private final Map<String, VarDecl<?>> varLut;
 
     public StatementParserVisitor(Map<String, VarDecl<?>> varLut) {
@@ -32,4 +29,12 @@ public class StatementParserVisitor extends GammaBaseVisitor<XcfaLabel> {
         VarDecl<?> decl = (VarDecl<?>) ((RefExpr<?>) lhs).getDecl();
         return new StmtLabel(Assign(cast(decl, decl.getType()), cast(rhs, decl.getType())));
     }
+
+    /*
+    @Override
+    public XcfaLabel visitRuleExpressionStatement(GammaParser.RuleExpressionStatementContext ctx) {
+        ExpressionParserVisitor expressionParserVisitor = new ExpressionParserVisitor(varLut);
+        Expr<?> expr = ctx.ruleExpression().accept(expressionParserVisitor);
+        return new StmtLabel();
+    }*/
 }

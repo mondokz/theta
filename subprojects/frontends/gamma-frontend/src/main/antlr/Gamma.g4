@@ -512,14 +512,14 @@ ruleState:
             'entry'
             '/'
             (
-                (ruleAction)
+                (ruleEntryAction)
             )*
         )?
         (
             'exit'
             '/'
             (
-                (ruleAction)
+                (ruleExitAction)
             )*
         )?
         ruleRegion
@@ -1269,6 +1269,14 @@ ruleAction:
             |
         ruleStatement
     )
+;
+
+ruleEntryAction:
+    ruleAction
+;
+
+ruleExitAction:
+    ruleAction
 ;
 
 // Rule FunctionDeclaration
