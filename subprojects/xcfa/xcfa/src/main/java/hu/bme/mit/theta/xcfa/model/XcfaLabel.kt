@@ -24,6 +24,7 @@ import hu.bme.mit.theta.core.stmt.SequenceStmt
 import hu.bme.mit.theta.core.stmt.Stmt
 import hu.bme.mit.theta.core.stmt.Stmts.*
 import hu.bme.mit.theta.core.type.Expr
+import hu.bme.mit.theta.frontend.transformation.grammar.expression.Dereference
 import hu.bme.mit.theta.grammar.dsl.expr.ExpressionWrapper
 import hu.bme.mit.theta.grammar.dsl.stmt.StatementWrapper
 import java.util.*
@@ -116,6 +117,18 @@ data class StmtLabel @JvmOverloads constructor(
             } else {
                 return StmtLabel(StatementWrapper(s, scope).instantiate(env), choiceType = ChoiceType.NONE, metadata = metadata)
             }
+        }
+    }
+}
+
+data class AssignDereferencedVariableLabel(val lhs: Dereference<*, *>, val rhs: Expr<*>, override val metadata: MetaData): XcfaLabel(metadata) {
+    override fun toString(): String {
+        return "$lhs := $rhs"
+    }
+    companion object {
+        fun fromString(s: String, scope: Scope, env: Env, metadata: MetaData): XcfaLabel {
+            val (lhs, rhs) = Regex("(.*) := (.*)").matchEntire(s)!!.destructured
+            return AssignDereferencedVariableLabel(ExpressionWrapper(scope, lhs).instantiate(env) as Dereference<*, *>, ExpressionWrapper(scope, rhs).instantiate(env), metadata)
         }
     }
 }

@@ -33,30 +33,16 @@ import hu.bme.mit.theta.core.type.booltype.BoolType
 import hu.bme.mit.theta.core.utils.TypeUtils.cast
 import hu.bme.mit.theta.frontend.FrontendMetadata
 import hu.bme.mit.theta.frontend.transformation.grammar.expression.Dereference
-import hu.bme.mit.theta.frontend.transformation.grammar.expression.Reference
 import hu.bme.mit.theta.frontend.transformation.model.statements.*
 import hu.bme.mit.theta.frontend.transformation.model.types.complex.CComplexType
 import hu.bme.mit.theta.frontend.transformation.model.types.complex.CVoid
 import hu.bme.mit.theta.frontend.transformation.model.types.complex.compound.CArray
-import hu.bme.mit.theta.frontend.transformation.model.types.complex.compound.CPointer
 import hu.bme.mit.theta.frontend.transformation.model.types.complex.compound.CStruct
 import hu.bme.mit.theta.frontend.transformation.model.types.simple.CSimpleTypeFactory
 import hu.bme.mit.theta.xcfa.model.*
 import hu.bme.mit.theta.xcfa.passes.CPasses
 import java.util.*
-import java.util.Set
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
-import kotlin.collections.Collection
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
-import kotlin.collections.List
-import kotlin.collections.MutableCollection
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
-import kotlin.collections.emptyList
-import kotlin.collections.listOf
-import kotlin.collections.set
 
 class FrontendXcfaBuilder : CStatementVisitorBase<FrontendXcfaBuilder.ParamPack, XcfaLocation>() {
     private val locationLut: MutableMap<String, XcfaLocation> = LinkedHashMap()
@@ -183,47 +169,50 @@ class FrontendXcfaBuilder : CStatementVisitorBase<FrontendXcfaBuilder.ParamPack,
             builder.addEdge(xcfaEdge)
         } else if (lValue is Dereference<*, *>) {
             val op = lValue.op
-            val type = op.type
-            val ptrType = CComplexType.getUnsignedLong().smtType
-            if (!memoryMaps.containsKey(type)) {
-                val toAdd = Decls.Var<ArrayType<*, *>>("memory_$type", ArrayType.of(ptrType, type))
-                builder.parent.addVar(XcfaGlobalVar(toAdd, ArrayLitExpr.of(emptyList(), cast(CComplexType.getType(op).nullValue, type), ArrayType.of(ptrType, type)) ))
-                memoryMaps[type] = toAdd
-                FrontendMetadata.create(toAdd, "defaultElement", CComplexType.getType(op).nullValue)
-            }
-            val memoryMap = memoryMaps[type]!!
-            FrontendMetadata.create(op, "dereferenced", true)
-            FrontendMetadata.create(op, "refSubstitute", memoryMap)
-            val write = ArrayExprs.Write(cast(memoryMap.ref, ArrayType.of(ptrType, type)),
-                    cast(lValue.op, ptrType),
-                    cast(rExpression, type))
-            FrontendMetadata.create(write, "cType", CArray(null, CComplexType.getType(lValue.op)))
-            xcfaEdge = XcfaEdge(initLoc, location, StmtLabel(Stmts.Assign(cast(memoryMap, ArrayType.of(ptrType, type)), write), metadata = getMetadata(statement)), metadata=getMetadata(statement))
+//            val type = op.type
+//            val ptrType = CComplexType.getUnsignedLong().smtType
+//            if (!memoryMaps.containsKey(type)) {
+//                val toAdd = Decls.Var<ArrayType<*, *>>("memory_$type", ArrayType.of(ptrType, type))
+//                builder.parent.addVar(XcfaGlobalVar(toAdd, ArrayLitExpr.of(emptyList(), cast(CComplexType.getType(op).nullValue, type), ArrayType.of(ptrType, type)) ))
+//                memoryMaps[type] = toAdd
+//                FrontendMetadata.create(toAdd, "defaultElement", CComplexType.getType(op).nullValue)
+//            }
+//            val memoryMap = memoryMaps[type]!!
+//            FrontendMetadata.create(op, "dereferenced", true)
+//            FrontendMetadata.create(op, "refSubstitute", memoryMap)
+//            val write = ArrayExprs.Write(cast(memoryMap.ref, ArrayType.of(ptrType, type)),
+//                    cast(lValue.op, ptrType),
+//                    cast(rExpression, type))
+//            FrontendMetadata.create(write, "cType", CArray(null, CComplexType.getType(lValue.op)))
+//            xcfaEdge = XcfaEdge(initLoc, location, StmtLabel(Stmts.Assign(cast(memoryMap, ArrayType.of(ptrType, type)), write), metadata = getMetadata(statement)), metadata=getMetadata(statement))
+            xcfaEdge = XcfaEdge(initLoc, location, AssignDereferencedVariableLabel(
+                    lValue,
+                    CComplexType.getType(lValue).castTo(rExpression), metadata = getMetadata(statement)), metadata=getMetadata(statement))
             builder.addEdge(xcfaEdge)
         } else {
             xcfaEdge = XcfaEdge(initLoc, location, StmtLabel(Stmts.Assign(
                     cast((lValue as RefExpr<*>).decl as VarDecl<*>, (lValue.decl as VarDecl<*>).type),
                     cast(CComplexType.getType(lValue).castTo(rExpression), lValue.type)), metadata = getMetadata(statement)), metadata=getMetadata(statement))
-            if (CComplexType.getType(lValue) is CPointer && CComplexType.getType(rExpression) is CPointer) {
-                Preconditions.checkState(rExpression is RefExpr<*> || rExpression is Reference<*, *>)
-                if (rExpression is RefExpr<*>) {
-                    var pointsTo = FrontendMetadata.getMetadataValue(lValue, "pointsTo")
-                    if (pointsTo.isPresent && pointsTo.get() is Collection<*>) {
-                        (pointsTo.get() as MutableCollection<Expr<*>?>).add(rExpression)
-                    } else {
-                        pointsTo = Optional.of(LinkedHashSet<Expr<*>>(Set.of(rExpression)))
-                    }
-                    FrontendMetadata.create(lValue, "pointsTo", pointsTo.get())
-                } else {
-                    var pointsTo = FrontendMetadata.getMetadataValue(lValue, "pointsTo")
-                    if (pointsTo.isPresent && pointsTo.get() is Collection<*>) {
-                        (pointsTo.get() as MutableCollection<Expr<*>?>).add((rExpression as Reference<*, *>).op)
-                    } else {
-                        pointsTo = Optional.of(LinkedHashSet(Set.of((rExpression as Reference<*, *>).op)))
-                    }
-                    FrontendMetadata.create(lValue, "pointsTo", pointsTo.get())
-                }
-            }
+//            if (CComplexType.getType(lValue) is CPointer && CComplexType.getType(rExpression) is CPointer) {
+//                Preconditions.checkState(rExpression is RefExpr<*> || rExpression is Reference<*, *>)
+//                if (rExpression is RefExpr<*>) {
+//                    var pointsTo = FrontendMetadata.getMetadataValue(lValue, "pointsTo")
+//                    if (pointsTo.isPresent && pointsTo.get() is Collection<*>) {
+//                        (pointsTo.get() as MutableCollection<Expr<*>?>).add(rExpression)
+//                    } else {
+//                        pointsTo = Optional.of(LinkedHashSet<Expr<*>>(Set.of(rExpression)))
+//                    }
+//                    FrontendMetadata.create(lValue, "pointsTo", pointsTo.get())
+//                } else {
+//                    var pointsTo = FrontendMetadata.getMetadataValue(lValue, "pointsTo")
+//                    if (pointsTo.isPresent && pointsTo.get() is Collection<*>) {
+//                        (pointsTo.get() as MutableCollection<Expr<*>?>).add((rExpression as Reference<*, *>).op)
+//                    } else {
+//                        pointsTo = Optional.of(LinkedHashSet(Set.of((rExpression as Reference<*, *>).op)))
+//                    }
+//                    FrontendMetadata.create(lValue, "pointsTo", pointsTo.get())
+//                }
+//            }
             builder.addEdge(xcfaEdge)
         }
         return location

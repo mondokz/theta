@@ -23,9 +23,13 @@ import hu.bme.mit.theta.common.dsl.SymbolTable
 import hu.bme.mit.theta.core.decl.VarDecl
 import hu.bme.mit.theta.core.stmt.AssumeStmt
 import hu.bme.mit.theta.core.type.Expr
+import hu.bme.mit.theta.core.type.Type
+import hu.bme.mit.theta.core.type.anytype.RefExpr
 import hu.bme.mit.theta.core.type.booltype.BoolType
 import hu.bme.mit.theta.core.utils.ExprUtils
 import hu.bme.mit.theta.core.utils.StmtUtils
+import hu.bme.mit.theta.frontend.transformation.grammar.expression.Dereference
+import hu.bme.mit.theta.frontend.transformation.grammar.expression.Reference
 import hu.bme.mit.theta.xcfa.model.*
 
 
@@ -52,6 +56,19 @@ fun XcfaLabel.collectVars(): Iterable<VarDecl<*>> = when(this) {
     is WriteLabel -> setOf(global, local)
     else -> emptySet()
 }
+
+fun <T: Type> Expr<T>.replaceSubexpression(replacer: (Expr<*>) -> Expr<*>) : Expr<T> {
+    return replacer(withOps(ops.map { it.replaceSubexpression(replacer) })) as Expr<T>
+}
+
+fun Expr<*>.exchangeAliases(aliases: Map<VarDecl<*>, VarDecl<*>>): Expr<*> =
+    this.replaceSubexpression {
+        when(it) {
+            is Dereference<*, *> -> aliases[(it.op as RefExpr<*>).decl as VarDecl<*>]?.ref ?: error("Uninitialized pointer dereferenced.")
+            is Reference<*, *> -> error("Right-hand expression contains references.")
+            else -> it
+        }
+    }
 
 fun XCFA.getSymbols(): Pair<XcfaScope, Env> {
     val symbolTable = SymbolTable()
