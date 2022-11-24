@@ -53,17 +53,37 @@ jobs:
       - run: |
           cd sv-benchmarks
           git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp"
+      - run: |
+          cd sv-benchmarks
           git checkout main
+      - run: |
+          cd sv-benchmarks
           cat c/*set | awk 'NF' | sed '/^#/d' | sed 's/^/c\//' >> .git/info/sparse-checkout 
+      - run: |
+          cd sv-benchmarks
           git sparse-checkout reapply
+      - run: |
+          cd sv-benchmarks
           for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "echo c/$taskCollection"); do echo ${task#c/}; done | head -n5; done > ${i%.set}-smoketest.set; done
+      - run: |
+          cd sv-benchmarks
           echo "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp" > .git/info/sparse-checkout
+      - run: |
+          cd sv-benchmarks
           for i in $(cat c/*-smoketest.set); do echo c/$i >> .git/info/sparse-checkout; done
+      - run: |
+          cd sv-benchmarks
           git sparse-checkout reapply
+      - run: |
+          cd sv-benchmarks
           for i in $(cat c/*-smoketest.set); do cat c/$i | grep input_files | awk ' { print $2 } ' | xargs printf "c/%s/%s\n" $(dirname $i) >> .git/info/sparse-checkout; done
+      - run: |
+          cd sv-benchmarks
           git sparse-checkout reapply
+      - run: |
+          cd sv-benchmarks
           for i in c/*-smoketest.set; do mv $i ${i%-smoketest.set}.set; done
-      - run: zip sv-benchmarks.zip sv-benchmarks -r
+      - run: zip sv-benchmarks.zip sv-benchmarks/c -r
       - uses: actions/upload-artifact@v3
         with:
           name: sv-benchmarks.zip
