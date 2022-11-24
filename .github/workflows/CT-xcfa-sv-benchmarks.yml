@@ -1,4 +1,4 @@
-name: test-xcfa-sv-benchmarks
+name: Test xcfa-cli with selected tasks from sv-benchmarks
 
 on:
   workflow_dispatch: null
@@ -64,7 +64,7 @@ jobs:
           git sparse-checkout reapply
       - run: |
           cd sv-benchmarks
-          for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "ls c/$taskCollection | head -n1"); do echo ${task#c/}; done; done > ${i%.set}-smoketest.set; done
+          for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "ls c/$taskCollection | head -n2"); do echo ${task#c/}; done; done > ${i%.set}-smoketest.set; done
       - run: |
           cd sv-benchmarks
           git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp"
@@ -93,11 +93,6 @@ jobs:
     name: Test xcfa-cli with benchexec
     needs: [assemble, benchmarkSuite]
     runs-on: ubuntu-latest
-    # container:
-    #   image: ubuntu:22.04
-    #   options: --privileged
-    #   volumes:
-    #     - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
       - uses: actions/download-artifact@v3
@@ -116,11 +111,38 @@ jobs:
           wget https://gitlab.com/sosy-lab/sv-comp/bench-defs/-/raw/main/benchmark-defs/theta.xml
           sed -i 's/memlimit="15 GB"/memlimit="6 GB"/g' theta.xml
           sed -i 's/cpuCores="8"/cpuCores="2"/g' theta.xml
-          sed -i 's/timelimit="15 min"/timelimit="15 s"/g' theta.xml
-          sed -i 's/hardtimelimit="16 min"/hardtimelimit="15 s"/g' theta.xml
+          sed -i 's/timelimit="15 min"/timelimit="2 min"/g' theta.xml
+          sed -i 's/hardtimelimit="16 min"/hardtimelimit="3 min"/g' theta.xml
           sudo chmod o+wt /sys/fs/cgroup/cpu,cpuacct/system.slice/benchexec-cgroup.service /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service
           sudo benchexec theta.xml --read-only-dir / --overlay-dir /home
       - uses: actions/upload-artifact@v3
         with:
           name: benchmark-results
           path: theta/results
+
+
+  deploy:
+    name: Deploy results 
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: benchmark-results
+      - run: |
+          cd benchmark-results
+          unzip *logfiles.zip
+          rm *logfiles.zip
+      - run: for i in benchmark-results/*bz2; do bzip2 -d $i; done
+      - run: for i in benchmark-results/*xml; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
+      - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec unzip -y
+      - run: for i in benchmark-results/*xml; do table-generator $i; done
+      - run: |
+        cd benchmark-results
+        rm *xml
+        find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a>" }' > index.html
+      - uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          branch: gh-pages
+          folder: benchmark-results
+          target_folder: ct/benchmark-results
