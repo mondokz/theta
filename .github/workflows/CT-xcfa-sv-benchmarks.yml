@@ -64,7 +64,7 @@ jobs:
           git sparse-checkout reapply
       - run: |
           cd sv-benchmarks
-          for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "echo c/$taskCollection"); do echo ${task#c/}; done | tail -n +1 | head -n5; done > ${i%.set}-smoketest.set; done
+          for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "ls c/$taskCollection | head -n5"); do echo ${task#c/}; done; done > ${i%.set}-smoketest.set; done
       - run: |
           cd sv-benchmarks
           echo "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp" > .git/info/sparse-checkout
