@@ -79,7 +79,7 @@ jobs:
     #   volumes:
     #     - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
+      - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
       - uses: actions/download-artifact@v3
         with:
           name: theta.zip
