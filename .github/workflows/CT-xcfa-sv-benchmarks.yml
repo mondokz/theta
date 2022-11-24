@@ -71,10 +71,10 @@ jobs:
     name: Test xcfa-cli with benchexec
     needs: [assemble, benchmarkSuite]
     runs-on: ubuntu-latest
-    container:
-      options: --privileged
-      volumes:
-        - /sys/fs/cgroup:/sys/fs/cgroup
+    # container:
+    #   options: --privileged
+    #   volumes:
+    #     - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/download-artifact@v3
         with:
