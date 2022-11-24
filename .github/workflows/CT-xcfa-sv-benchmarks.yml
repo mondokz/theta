@@ -1,4 +1,4 @@
-name: test-xcfa-sv-benchmarks
+name: Test xcfa-cli with selected tasks from sv-benchmarks
 
 on:
   workflow_dispatch: null
@@ -138,9 +138,9 @@ jobs:
       - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec unzip -y
       - run: for i in benchmark-results/*xml; do table-generator $i; done
       - run: |
-        cd benchmark-results
-        rm *xml
-        find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a>" }' > index.html
+          cd benchmark-results
+          rm *xml
+          find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a>" }' > index.html
       - uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           branch: gh-pages
