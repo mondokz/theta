@@ -1,4 +1,4 @@
-name: Test xcfa-cli on software verification tasks.
+name: test-xcfa-sv-benchmarks
 'on':
   workflow_dispatch: null
 jobs:
