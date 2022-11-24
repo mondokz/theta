@@ -119,7 +119,7 @@ jobs:
           sed -i 's/timelimit="15 min"/timelimit="2 min"/g' theta.xml
           sed -i 's/hardtimelimit="16 min"/hardtimelimit="3 min"/g' theta.xml
           sudo chmod o+wt /sys/fs/cgroup/cpu,cpuacct/system.slice/benchexec-cgroup.service /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service
-          benchexec theta.xml --read-only-dir / --overlay-dir /home
+          sudo benchexec theta.xml --read-only-dir / --overlay-dir /home
       - uses: actions/upload-artifact@v3
         with:
           name: benchmark-results
