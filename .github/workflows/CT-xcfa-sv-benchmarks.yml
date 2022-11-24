@@ -66,3 +66,29 @@ jobs:
         with:
           name: sv-benchmarks.zip
           path: sv-benchmarks.zip
+
+  test:
+    name: Test xcfa-cli with benchexec
+    needs: [assemble, benchmarkSuite]
+    runs-on: ubuntu-latest
+    container:
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: theta.zip
+      - uses: actions/download-artifact@v3
+        with:
+          name: sv-benchmarks.zip
+      - run: |
+          mkdir theta
+          cd theta
+          unzip ../theta.zip
+      - run: unzip sv-benchmarks.zip
+      - run: add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec -y
+      - run: |
+          cd theta 
+          wget https://gitlab.com/sosy-lab/sv-comp/bench-defs/-/raw/main/benchmark-defs/theta.xml
+          benchexec theta.xml --read-only-dir / --overlay-dir /home
