@@ -49,10 +49,11 @@ jobs:
     runs-on:
       - ubuntu-latest
     steps:
-      - run: git clone --no-checkout https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/
+      - run: git clone --no-checkout --depth 1 https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/
       - run: |
           cd sv-benchmarks
           git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp"
+          git checkout main
           cat c/*set | awk 'NF' | sed '/^#/d' | sed 's/^/c\//' >> .git/info/sparse-checkout 
           git sparse-checkout reapply
           for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "echo c/$taskCollection"); do echo ${task#c/}; done | head -n5; done > ${i%.set}-smoketest.set; done
@@ -72,11 +73,11 @@ jobs:
     name: Test xcfa-cli with benchexec
     needs: [assemble, benchmarkSuite]
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:22.04
-      options: --privileged
-      volumes:
-        - /sys/fs/cgroup:/sys/fs/cgroup
+    # container:
+    #   image: ubuntu:22.04
+    #   options: --privileged
+    #   volumes:
+    #     - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - run: add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
       - uses: actions/download-artifact@v3
