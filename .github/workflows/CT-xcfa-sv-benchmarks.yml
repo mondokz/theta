@@ -1,4 +1,4 @@
-name: Test xcfa-cli with selected tasks from sv-benchmarks
+name: test-xcfa-sv-benchmarks
 
 on:
   workflow_dispatch: null
