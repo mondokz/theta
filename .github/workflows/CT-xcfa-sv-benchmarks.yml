@@ -36,8 +36,9 @@ jobs:
         with:
           name: theta.jar
       - run: cp scripts/theta-start.sh ./
+      - run: cp scripts/portfolio.kts ./complex.kts
       - run: mkdir solvers
-      - run: zip theta.zip theta.jar theta-start.sh lib solvers -r
+      - run: zip theta.zip theta.jar theta-start.sh lib solvers complex.kts -r
       - uses: actions/upload-artifact@v3
         with:
           name: theta.zip
@@ -71,11 +72,13 @@ jobs:
     name: Test xcfa-cli with benchexec
     needs: [assemble, benchmarkSuite]
     runs-on: ubuntu-latest
-    # container:
-    #   options: --privileged
-    #   volumes:
-    #     - /sys/fs/cgroup:/sys/fs/cgroup
+    container:
+      image: ubuntu:22.04
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
+      - run: add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
       - uses: actions/download-artifact@v3
         with:
           name: theta.zip
@@ -87,7 +90,6 @@ jobs:
           cd theta
           unzip ../theta.zip
       - run: unzip sv-benchmarks.zip
-      - run: add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec -y
       - run: |
           cd theta 
           wget https://gitlab.com/sosy-lab/sv-comp/bench-defs/-/raw/main/benchmark-defs/theta.xml
