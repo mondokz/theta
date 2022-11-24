@@ -63,7 +63,7 @@ jobs:
           for i in $(cat c/*-smoketest.set); do cat c/$i | grep input_files | awk ' { print $2 } ' | xargs printf "c/%s/%s\n" $(dirname $i) >> .git/info/sparse-checkout; done
           git sparse-checkout reapply
           for i in c/*-smoketest.set; do mv $i ${i%-smoketest.set}.set; done
-      - run: zip sv-benchmarks.zip sv-benchmarks
+      - run: zip sv-benchmarks.zip sv-benchmarks -r
       - uses: actions/upload-artifact@v3
         with:
           name: sv-benchmarks.zip
@@ -79,7 +79,7 @@ jobs:
     #   volumes:
     #     - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - run: add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
+      - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && apt update && apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
       - uses: actions/download-artifact@v3
         with:
           name: theta.zip
