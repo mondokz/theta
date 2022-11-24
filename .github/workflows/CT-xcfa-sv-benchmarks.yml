@@ -67,7 +67,7 @@ jobs:
           for i in c/*.set; do for taskCollection in $(cat $i | awk 'NF' | sed '/^#/d' ); do for task in $(bash -c "ls c/$taskCollection | head -n5"); do echo ${task#c/}; done; done > ${i%.set}-smoketest.set; done
       - run: |
           cd sv-benchmarks
-          echo "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp" > .git/info/sparse-checkout
+          git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp"
       - run: |
           cd sv-benchmarks
           for i in $(cat c/*-smoketest.set); do echo c/$i >> .git/info/sparse-checkout; done
@@ -114,4 +114,5 @@ jobs:
       - run: |
           cd theta 
           wget https://gitlab.com/sosy-lab/sv-comp/bench-defs/-/raw/main/benchmark-defs/theta.xml
+          sudo chmod o+wt /sys/fs/cgroup/cpu,cpuacct/system.slice/benchexec-cgroup.service /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service
           benchexec theta.xml --read-only-dir / --overlay-dir /home
