@@ -126,24 +126,27 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
           name: benchmark-results
           path: benchmark-results
       - run: |
-          cd benchmark-results
+          pushd benchmark-results
           unzip *logfiles.zip
           rm *logfiles.zip
+          popd
       - run: for i in benchmark-results/*bz2; do bzip2 -d $i; done
       - run: for i in benchmark-results/*xml; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
       - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec unzip -y
       - run: for i in benchmark-results/*xml; do table-generator $i; done
       - run: |
-          cd benchmark-results
+          pushd benchmark-results
           rm *xml
           find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a>" }' > index.html
-      - uses: JamesIves/github-pages-deploy-action@3.7.1
+          popd
+      - uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: benchmark-results
-          target_folder: ct/benchmark-results
+          target-folder: ct/benchmark-results
