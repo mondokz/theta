@@ -1,0 +1,5 @@
+tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set	SV-COMP23_unreach-call.ReachSafety-XCSP	SV-COMP23_unreach-call.ReachSafety-XCSP	SV-COMP23_unreach-call.ReachSafety-XCSP	SV-COMP23_unreach-call.ReachSafety-XCSP
+../sv-benchmarks/c/xcsp/	status	cputime (s)	walltime (s)	memory (MB)
+AllInterval-005.yml	false(unreach-call)	18.9367053	10.314566175999971	564.137984
+AllInterval-006.yml	false(unreach-call)	20.0289996	10.835195826000017	550.461440

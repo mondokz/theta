@@ -1,5 +1,0 @@
-tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
-run set	SV-COMP23_unreach-call.ReachSafety-ProductLines	SV-COMP23_unreach-call.ReachSafety-ProductLines	SV-COMP23_unreach-call.ReachSafety-ProductLines	SV-COMP23_unreach-call.ReachSafety-ProductLines
-benchmark-results/https:/gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/raw/main/c/product-lines/	status	cputime (s)	walltime (s)	memory (MB)
-elevator_spec13_product21.cil.yml	ERROR (frontend failed)	1.6506659	0.9907047269998657	147.595264
-elevator_spec13_product22.cil.yml	ERROR (frontend failed)	1.5145346	0.8963592640002389	138.010624

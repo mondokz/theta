@@ -1,0 +1,11 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Sequentialized	SV-COMP23_unreach-call.ReachSafety-Sequentialized	SV-COMP23_unreach-call.ReachSafety-Sequentialized	SV-COMP23_unreach-call.ReachSafety-Sequentialized
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+systemc/bist_cell.cil.yml	true	true	75.0875573	58.413028824999856	559.587328
+systemc/kundu.cil.yml	true	ERROR (frontend failed)	1.2270874	0.7933534769999824	94.089216
+seq-mthreaded/pals_STARTPALS_ActiveStandby.1.ufo.BOUNDED-10.pals.yml	false	TIMEOUT	120.746582	103.07941007999943	589.565952
+seq-mthreaded/pals_STARTPALS_ActiveStandby.1.ufo.UNBOUNDED.pals.yml	false	TIMEOUT	120.7960111	102.20435350499974	606.920704
+seq-mthreaded-reduced/pals_floodmax.3.1.ufo.BOUNDED-6.pals.c.v+cfa-reducer.yml	false	ERROR (frontend failed)	1.2399293	0.7955532189998848	95.305728
+seq-mthreaded-reduced/pals_floodmax.3.1.ufo.BOUNDED-6.pals.c.v+lhb-reducer.yml	false	ERROR (frontend failed)	1.3758824	0.8714304559998709	109.203456
+seq-pthread/cs_dekker.yml	true	ERROR (frontend failed)	2.4767156	1.417823056999623	204.312576
+seq-pthread/cs_fib-1.yml	true	ERROR (frontend failed)	2.5845754	1.465348618000462	198.598656

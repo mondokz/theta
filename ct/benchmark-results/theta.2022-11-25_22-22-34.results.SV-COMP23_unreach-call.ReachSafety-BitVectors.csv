@@ -1,0 +1,8 @@
+tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set	SV-COMP23_unreach-call.ReachSafety-BitVectors	SV-COMP23_unreach-call.ReachSafety-BitVectors	SV-COMP23_unreach-call.ReachSafety-BitVectors	SV-COMP23_unreach-call.ReachSafety-BitVectors
+../sv-benchmarks/c/	status	cputime (s)	walltime (s)	memory (MB)
+bitvector/byte_add-1.yml	ERROR (portfolio error)	16.3297166	8.94580056399991	544.747520
+bitvector-regression/implicitfloatconversion.yml	ERROR (portfolio error)	13.7308907	7.858910739000066	441.057280
+bitvector-regression/implicitunsignedconversion-1.yml	false(unreach-call)	14.7515105	8.136674875999915	489.553920
+bitvector-loops/diamond_2-1.yml	TIMEOUT	120.7083003	104.50336350400016	652.988416
+bitvector-loops/overflow_1-2.yml	TIMEOUT	120.4187652	111.20052102499994	606.859264

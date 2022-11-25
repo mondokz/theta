@@ -1,0 +1,15 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Floats	SV-COMP23_unreach-call.ReachSafety-Floats	SV-COMP23_unreach-call.ReachSafety-Floats	SV-COMP23_unreach-call.ReachSafety-Floats
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+floats-cdfpl/newton_1_1.yml	true	ERROR (portfolio error)	14.414011	8.00449992799986	463.863808
+floats-cdfpl/newton_1_2.yml	true	ERROR (portfolio error)	13.8763333	7.831317644999672	434.237440
+floats-cbmc-regression/float-div1.yml	true	ERROR (frontend failed)	1.9946786	1.1808531960000437	172.871680
+floats-cbmc-regression/float-flags-simp1.yml	true	ERROR (frontend failed)	1.5593901	0.9386625360002654	146.681856
+float-benchs/Muller_Kahan.c.p+cfa-reducer.yml	true	ERROR (portfolio error)	65.569639	59.06231483800002	1093.431296
+float-benchs/Muller_Kahan.yml	true	ERROR (portfolio error)	39.9855765	33.349517947000095	1066.561536
+floats-esbmc-regression/Double_div.i.p+cfa-reducer.yml	true	ERROR (portfolio error)	20.7177823	14.255836418999934	669.114368
+floats-esbmc-regression/Double_div.yml	true	ERROR (portfolio error)	13.8300762	7.794798939999964	409.522176
+float-newlib/double_req_bl_0210.yml	true	ERROR (frontend failed)	1.4669388	0.9051035699999375	125.706240
+float-newlib/double_req_bl_0220a.yml	true	ERROR (frontend failed)	1.3538703	0.8340488059998279	113.848320
+loop-floats-scientific-comp/loop1-1.yml	true	ERROR (portfolio error)	14.419226	7.97613682400015	442.793984
+loop-floats-scientific-comp/loop1-2.yml	false	ERROR (portfolio error)	14.1327876	7.841988145999949	435.187712

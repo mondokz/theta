@@ -1,0 +1,22 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Arrays	SV-COMP23_unreach-call.ReachSafety-Arrays	SV-COMP23_unreach-call.ReachSafety-Arrays	SV-COMP23_unreach-call.ReachSafety-Arrays
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+array-examples/data_structures_set_multi_proc_ground-1.yml	false	TIMEOUT	120.4515156	110.34316185500006	553.721856
+array-examples/data_structures_set_multi_proc_ground-2.yml	true	TIMEOUT	120.4711739	109.97068167300006	573.157376
+array-industry-pattern/array_assert_loop_dep.yml	false	TIMEOUT	120.4571717	110.66497943699994	538.259456
+array-industry-pattern/array_monotonic.yml	true	TIMEOUT	120.4712432	110.10764918399991	559.378432
+reducercommutativity/avg05-1.yml	true	ERROR (portfolio error)	16.6559978	9.3220307979999	519.266304
+array-tiling/mbpr2.yml	true	TIMEOUT	120.043653	97.33422927999993	653.889536
+array-tiling/mbpr3.yml	true	TIMEOUT	120.9880785	99.38526533399988	588.881920
+array-programs/copysome1-1.yml	true	TIMEOUT	120.4644494	110.07958946299982	548.253696
+array-programs/copysome1-2.yml	false	TIMEOUT	120.4485551	110.54447729100002	543.367168
+array-crafted/bAnd1.yml	true	ERROR (portfolio error)	15.5177705	8.983487720999847	486.281216
+array-crafted/bAnd2.yml	true	ERROR (portfolio error)	15.2944901	8.453685072000098	536.985600
+array-multidimensional/add-2-n-u.yml	true	ERROR (portfolio error)	14.4897465	8.051163395000003	487.567360
+array-multidimensional/add-3-n-u.yml	true	ERROR (portfolio error)	14.9513146	8.289827698000181	540.356608
+array-patterns/array10_pattern.yml	true	TIMEOUT	120.5062704	109.09584883899993	634.421248
+array-patterns/array11_pattern.yml	true	TIMEOUT	120.5438876	108.99679093000009	638.369792
+array-cav19/array_doub_access_init_const.yml	true	TIMEOUT	120.4716826	110.299234651	559.190016
+array-cav19/array_init_both_ends_multiple_sum.yml	true	TIMEOUT	120.459914	110.2602974859999	562.962432
+array-lopstr16/base_case.yml	true	ERROR (frontend failed)	1.1964293	0.7778279829999519	95.322112
+array-lopstr16/break-1.yml	true	ERROR (frontend failed)	1.1675468	0.7518485359998976	94.253056

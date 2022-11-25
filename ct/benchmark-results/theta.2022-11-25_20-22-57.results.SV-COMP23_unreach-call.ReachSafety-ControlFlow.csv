@@ -1,6 +1,0 @@
-tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
-run set		SV-COMP23_unreach-call.ReachSafety-ControlFlow	SV-COMP23_unreach-call.ReachSafety-ControlFlow	SV-COMP23_unreach-call.ReachSafety-ControlFlow	SV-COMP23_unreach-call.ReachSafety-ControlFlow
-benchmark-results/https:/gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/raw/main/c/		status	cputime (s)	walltime (s)	memory (MB)
-locks/test_locks_10.yml	true	TIMEOUT	120.4784942	109.94004542799985	586.731520
-locks/test_locks_11.yml	true	TIMEOUT	120.5319707	109.77846871100019	630.673408
-ntdrivers/cdaudio.i.cil-1.yml	false	ERROR (frontend failed)	3.6595993	1.9821116779999102	239.390720

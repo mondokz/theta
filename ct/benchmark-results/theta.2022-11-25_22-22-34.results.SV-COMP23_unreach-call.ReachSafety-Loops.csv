@@ -1,0 +1,32 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Loops	SV-COMP23_unreach-call.ReachSafety-Loops	SV-COMP23_unreach-call.ReachSafety-Loops	SV-COMP23_unreach-call.ReachSafety-Loops
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+loops/array-1.yml	true	ERROR (portfolio error)	15.316315	8.438309275999927	548.388864
+loops/array-2.yml	false	ERROR (portfolio error)	15.6494123	8.60932862000027	511.729664
+loop-acceleration/array_1-1.yml	false	TIMEOUT	120.4482017	110.68938333100004	579.579904
+loop-crafted/simple_array_index_value_1-1.yml	true	TIMEOUT	120.45874	110.48736038700008	612.048896
+loop-crafted/simple_array_index_value_1-2.yml	false	false(unreach-call)	16.3459418	8.993885062999652	507.170816
+loop-invgen/MADWiFi-encode_ie_ok.yml	true	ERROR (portfolio error)	16.7031917	9.236994903999857	509.304832
+loop-invgen/NetBSD_loop.yml	true	TIMEOUT	120.8421007	101.68001084799971	667.881472
+loop-lit/afnp2014.yml	true	TIMEOUT	120.4716919	110.1310545209999	565.514240
+loop-lit/bhmr2007.yml	true	TIMEOUT	120.7685415	102.99231898900007	632.471552
+loop-new/count_by_1.yml	true	TIMEOUT	120.4373638	110.85379208799986	606.150656
+loop-new/count_by_1_variant.yml	true	TIMEOUT	120.4688896	110.22584015199982	553.168896
+loop-industry-pattern/aiob_1.yml	true	ERROR (frontend failed)	1.4479673	0.9484278599998106	109.428736
+loop-industry-pattern/aiob_2.yml	true	ERROR (frontend failed)	1.3961701	0.8899203060000218	103.129088
+loops-crafted-1/Mono1_1-1.yml	false	TIMEOUT	120.4357331	110.87169244699999	600.969216
+loops-crafted-1/Mono1_1-2.yml	true	TIMEOUT	120.4279879	111.24873770399972	587.665408
+loop-invariants/bin-suffix-5.yml	true	ERROR (portfolio error)	13.7262735	7.698517358000117	458.022912
+loop-invariants/const.yml	true	true	14.4737143	8.132952041999943	496.472064
+loop-simple/deep-nested.yml	false	TIMEOUT	120.4450283	110.67189836299985	584.425472
+loop-simple/nested_1.yml	true	ERROR (frontend failed)	0.9874543	0.6413951699996687	80.535552
+loop-zilu/benchmark02_linear.yml	true	ERROR (portfolio error)	15.2423167	8.455350932000329	495.702016
+verifythis/duplets.yml	true	ERROR (frontend failed)	1.1923151	0.7439244670003973	96.382976
+verifythis/elimination_max.yml	true	ERROR (frontend failed)	1.2197176	0.7912453250000908	90.525696
+verifythis/lcp.yml	true	ERROR (frontend failed)	1.1438525	0.722525375999794	91.566080
+verifythis/prefixsum_iter.yml	true	ERROR (frontend failed)	1.3027923	0.8236922529995354	97.198080
+verifythis/tree_del_iter.yml	false	ERROR (frontend failed)	1.1599967	0.7554766940002082	91.467776
+verifythis/tree_del_iter_incorrect.yml	false	ERROR (frontend failed)	1.1694354	0.7368686139998317	87.801856
+nla-digbench/bresenham-ll.yml	true	ERROR (portfolio error)	18.2028725	9.932957955000347	577.847296
+nla-digbench-scaling/bresenham-ll_unwindbound1.yml	false	false(unreach-call)	18.761529	10.201093136999589	530.841600
+nla-digbench-scaling/bresenham-ll_unwindbound10.yml	false	ERROR (portfolio error)	18.7351314	10.242582959000174	548.810752

@@ -1,0 +1,7 @@
+tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set	SV-COMP23_unreach-call.ReachSafety-Hardware	SV-COMP23_unreach-call.ReachSafety-Hardware	SV-COMP23_unreach-call.ReachSafety-Hardware	SV-COMP23_unreach-call.ReachSafety-Hardware
+../sv-benchmarks/c/	status	cputime (s)	walltime (s)	memory (MB)
+hardware-verification-array/btor2c-lazyMod.safe_arbitrated_fifos_n2d8w8.yml	ERROR (frontend failed)	1.0888789	0.70057186700069	87.810048
+hardware-verification-array/btor2c-lazyMod.safe_linked_list_fifo_n2d4.yml	ERROR (frontend failed)	1.1105584	0.7032031910002843	87.629824
+hardware-verification-bv/btor2c-lazyMod.Heap.yml	ERROR (portfolio error)	25.3509653	14.34999670399975	695.955456
+hardware-verification-bv/btor2c-lazyMod.Huffman_dec.yml	ERROR (portfolio error)	18.2123752	10.036295886000516	564.285440
