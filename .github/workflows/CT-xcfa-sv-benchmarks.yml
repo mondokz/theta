@@ -136,14 +136,13 @@ jobs:
           unzip *logfiles.zip
           rm *logfiles.zip
           popd
-      - run: for i in benchmark-results/*bz2; do bzip2 -d $i; done
-      - run: for i in benchmark-results/*xml; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
       - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec unzip -y
-      - run: for i in benchmark-results/*xml; do table-generator $i; done
+      - run: for i in benchmark-results/*xml.bz2; do table-generator $i; done
+      - run: for i in benchmark-results/*html; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
       - run: |
           pushd benchmark-results
-          rm *xml
-          find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a>" }' > index.html
+          rm *xml.bz2
+          find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a><br/>" }' > index.html
           popd
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
