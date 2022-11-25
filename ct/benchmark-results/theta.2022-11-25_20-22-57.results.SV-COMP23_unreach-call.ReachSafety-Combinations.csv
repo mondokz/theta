@@ -1,0 +1,5 @@
+tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set	SV-COMP23_unreach-call.ReachSafety-Combinations	SV-COMP23_unreach-call.ReachSafety-Combinations	SV-COMP23_unreach-call.ReachSafety-Combinations	SV-COMP23_unreach-call.ReachSafety-Combinations
+benchmark-results/https:/gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/raw/main/c/combinations/	status	cputime (s)	walltime (s)	memory (MB)
+Problem05_label40+token_ring.01.cil-1.yml	TIMEOUT	120.5779354	87.72915854500025	4277.297152
+Problem05_label40+token_ring.02.cil-1.yml	OUT OF MEMORY	91.3021155	60.09071766299985	5999.996928

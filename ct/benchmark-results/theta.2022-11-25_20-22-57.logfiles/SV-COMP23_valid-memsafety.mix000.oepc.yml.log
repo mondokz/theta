@@ -1,0 +1,118 @@
+./theta-start.sh ../sv-benchmarks/c/pthread-wmm/mix000.oepc.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/valid-memsafety.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/valid-memsafety.prp --input ../sv-benchmarks/c/pthread-wmm/mix000.oepc.i --smt-home /home/runner/work/theta/theta/theta/solvers
+Unknown property ../sv-benchmarks/c/properties/valid-memsafety.prp, using full state space exploration (no refinement)
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: self-embedded structs! Using long as a placeholder
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union pthread_attr_t
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Variable already exists: __unbuffered_cnt
+WARNING: Variable already exists: __unbuffered_p0_EAX
+WARNING: Variable already exists: __unbuffered_p0_EBX
+WARNING: Variable already exists: __unbuffered_p1_EAX
+WARNING: Variable already exists: __unbuffered_p1_EBX
+WARNING: Variable already exists: x
+WARNING: Variable already exists: y
+Arithmetic: INTEGER
+(SafetyResult Safe)
+java.io.FileNotFoundException: /home/runner/work/theta/theta/theta/witness.graphml (Permission denied)
+	at java.base/java.io.FileOutputStream.open0(Native Method)
+	at java.base/java.io.FileOutputStream.open(FileOutputStream.java:293)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:235)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:184)
+	at java.base/java.io.FileWriter.<init>(FileWriter.java:96)
+	at hu.bme.mit.theta.xcfa.cli.utils.XcfaWitnessWriter.writeWitness(XcfaWitnessWriter.kt:110)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:124)
+	at hu.bme.mit.theta.xcfa.cli.ExitCodesKt.exitOnError(ExitCodes.kt:43)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.run(XcfaCegarServer.java:78)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.main(XcfaCegarServer.java:137)
+Config successful, exiting: XcfaCegarConfig(errorDetectionType=NO_ERROR, abstractionSolver=Z3, validateAbstractionSolver=false, domain=EXPL, maxEnum=1, search=BFS, initPrec=EMPTY, porLevel=AAPOR, refinementSolver=Z3, validateRefinementSolver=false, refinement=SEQ_ITP, exprSplitter=WHOLE, pruneStrategy=LAZY, noCexCheck=false, timeoutMs=120000)

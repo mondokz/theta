@@ -1,0 +1,10 @@
+./theta-start.sh ../sv-benchmarks/c/ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-2.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/valid-memsafety.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/valid-memsafety.prp --input ../sv-benchmarks/c/ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-2.i --smt-home /home/runner/work/theta/theta/theta/solvers
+Unknown property ../sv-benchmarks/c/properties/valid-memsafety.prp, using full state space exploration (no refinement)
+line 1758:0 no viable alternative at input 'structmod_arch_specific{}'
+Frontend failed!

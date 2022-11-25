@@ -1,0 +1,33 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_no-data-race.NoDataRace-Main	SV-COMP23_no-data-race.NoDataRace-Main	SV-COMP23_no-data-race.NoDataRace-Main	SV-COMP23_no-data-race.NoDataRace-Main
+benchmark-results/https:/gitlab.com/sosy-lab/benchmarking/sv-benchmarks/-/raw/main/c/		status	cputime (s)	walltime (s)	memory (MB)
+pthread/bigshot_p.yml	false	ERROR (frontend failed)	3.0688037	1.6895911970004818	230.916096
+pthread/bigshot_s.yml	true	ERROR (frontend failed)	2.6954314	1.4926115919997756	259.670016
+pthread-atomic/dekker-b.yml	false	ERROR (frontend failed)	2.4458547	1.3531854220000241	197.730304
+pthread-atomic/dekker.yml	true	true	27.1776675	17.990044565000062	620.183552
+pthread-ext/01_inc.yml	false	TIMEOUT	120.4604013	110.61364560199945	840.257536
+pthread-ext/01b_inc.yml	true	TIMEOUT	120.4726277	110.11773702200026	832.806912
+pthread-wmm/mix000.oepc.yml	true	true	100.6358066	90.3887834219995	590.004224
+pthread-wmm/mix000.opt.yml	true	true	76.5852985	65.64021900500029	589.922304
+pthread-lit/fk2012.yml	false	TIMEOUT	120.4983173	109.04732754799988	685.375488
+pthread-lit/fkp2013-1.yml	false	false(unreach-call)	20.5199698	11.018089283000336	813.363200
+ldv-races/race-1_1-join.yml	true	ERROR (frontend failed)	3.3996109	1.8652162600001247	251.277312
+ldv-races/race-1_2-join.yml	true	ERROR (frontend failed)	3.6564874	1.981643847999294	245.739520
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-1.yml	true	ERROR (frontend failed)	1.5275185	0.8931239260000439	150.450176
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-2.yml	true	ERROR (frontend failed)	1.5836715	0.9475373969999055	154.935296
+pthread-complex/bounded_buffer.yml	true	ERROR (frontend failed)	3.6529986	1.9674309080000967	240.701440
+pthread-complex/elimination_backoff_stack.yml	true	ERROR (frontend failed)	3.0577344	1.668134597000062	194.326528
+pthread-driver-races/char_generic_nvram_nvram_llseek_nvram_unlocked_ioctl.yml	true	ERROR (frontend failed)	1.0320016	0.6580568380004479	111.980544
+pthread-driver-races/char_generic_nvram_nvram_llseek_read_nvram.yml	true	ERROR (frontend failed)	1.1553047	0.701357103999726	112.148480
+pthread-C-DAC/pthread-demo-datarace-1.yml	true	ERROR (frontend failed)	3.2002504	1.7424629440001809	226.004992
+pthread-C-DAC/pthread-demo-datarace-2.yml	false	ERROR (frontend failed)	2.6821234	1.4991891970003053	218.976256
+pthread-divine/barrier_2t.yml	false	ERROR (frontend failed)	1.9865554	1.1462468589998025	186.408960
+pthread-divine/barrier_3t.yml	false	ERROR (frontend failed)	1.8194929	1.049193464000382	192.401408
+pthread-nondet/nondet-array-1.yml	false	ERROR (frontend failed)	1.8534834	1.0641234950007856	183.324672
+pthread-nondet/nondet-array-2.yml	false	ERROR (frontend failed)	1.7570108	1.0304988770003547	188.112896
+goblint-regression/00-sanity_09-include.yml	false	ERROR (frontend failed)	2.3915348	1.3626250410006833	210.591744
+goblint-regression/02-base_24-malloc_races.yml	false	ERROR (frontend failed)	2.5378235	1.409055114999319	212.856832
+weaver/array-eq-symm.wvr.yml	true	ERROR (frontend failed)	0.8950399	0.573525298000277	81.428480
+weaver/array-eq-trans.wvr.yml	true	ERROR (frontend failed)	1.0989203	0.6962853810000524	96.555008
+pthread-deagle/airline-10.yml	false	ERROR (frontend failed)	1.7550489	1.0086535729997195	181.596160
+pthread-deagle/airline-15.yml	false	ERROR (frontend failed)	2.0839259	1.1962791500000094	186.753024

@@ -1,0 +1,117 @@
+./theta-start.sh ../sv-benchmarks/c/list-properties/alternating_list-2.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/list-properties/alternating_list-2.i --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: enums are not yet supported! Using int instead.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: sizeof got unknown type, using a literal 0 instead.
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: sizeof got unknown type, using a literal 0 instead.
+WARNING: self-embedded structs! Using long as a placeholder
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union pthread_attr_t
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: sizeof got unknown type, using a literal 0 instead.
+Frontend failed!

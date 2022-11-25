@@ -1,0 +1,9 @@
+./theta-start.sh ../sv-benchmarks/c/ddv-machzwd/ddv_machzwd_all.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/ddv-machzwd/ddv_machzwd_all.i --smt-home /home/runner/work/theta/theta/theta/solvers
+line 3176:55 no viable alternative at input 'sizeof(driver->'
+Frontend failed!

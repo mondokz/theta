@@ -1,0 +1,62 @@
+./theta-start.sh ../sv-benchmarks/c/floats-esbmc-regression/Double_div.i.p+cfa-reducer.c --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/floats-esbmc-regression/Double_div.i.p+cfa-reducer.c --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+Arithmetic: BITWISE_FLOAT
+com.microsoft.z3.Z3Exception: theory not supported by interpolation or bad proof
+	at com.microsoft.z3.Native.getInterpolant(Native.java:5468)
+	at com.microsoft.z3.InterpolationContext.GetInterpolant(InterpolationContext.java:91)
+	at hu.bme.mit.theta.solver.z3.Z3ItpSolver.getInterpolant(Z3ItpSolver.java:100)
+	at hu.bme.mit.theta.analysis.expr.refinement.ExprTraceSeqItpChecker.check(ExprTraceSeqItpChecker.java:97)
+	at hu.bme.mit.theta.analysis.expr.refinement.SingleExprTraceRefiner.refine(SingleExprTraceRefiner.java:96)
+	at hu.bme.mit.theta.analysis.algorithm.cegar.CegarChecker.check(CegarChecker.java:90)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig.check(XcfaCegarConfig.kt:135)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:118)
+	at hu.bme.mit.theta.xcfa.cli.ExitCodesKt.exitOnError(ExitCodes.kt:43)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.run(XcfaCegarServer.java:78)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.main(XcfaCegarServer.java:137)
+Portfolio from complex.kts could not be executed.javax.script.ScriptException: ErrorCodeException(code=221)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:101)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.compileAndEval(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at kotlin.script.experimental.jvmhost.jsr223.KotlinJsr223ScriptEngineImpl.compileAndEval(KotlinJsr223ScriptEngineImpl.kt:95)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.eval(KotlinJsr223JvmScriptEngineBase.kt:33)
+	at java.scripting/javax.script.AbstractScriptEngine.eval(AbstractScriptEngine.java:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.run(XcfaCli.kt:248)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.access$run(XcfaCli.kt:57)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli$Companion.main(XcfaCli.kt:305)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.main(XcfaCli.kt)
+Caused by: ErrorCodeException(code=221)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:174)
+	at ScriptingHost56de6d6b_Line_0.<init>(ScriptingHost56de6d6b_Line_0.kts:57)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.evalWithConfigAndOtherScriptsResults(BasicJvmScriptEvaluator.kt:100)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke$suspendImpl(BasicJvmScriptEvaluator.kt:47)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke(BasicJvmScriptEvaluator.kt)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator$eval$1$res$1.invokeSuspend(legacyReplEvaluation.kt:62)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlin.coroutines.ContinuationKt.startCoroutine(Continuation.kt:115)
+	at kotlin.script.experimental.impl.RunSuspendKt.internalScriptingRunSuspend(runSuspend.kt:19)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator.eval(legacyReplEvaluation.kt:62)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.eval(GenericReplCompilingEvaluator.kt:76)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.compileAndEval(GenericReplCompilingEvaluator.kt:51)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:64)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:90)
+	... 8 more

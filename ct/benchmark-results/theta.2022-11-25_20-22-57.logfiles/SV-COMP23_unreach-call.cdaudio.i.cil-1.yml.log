@@ -1,0 +1,119 @@
+./theta-start.sh ../sv-benchmarks/c/ntdrivers/cdaudio.i.cil-1.c --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/ntdrivers/cdaudio.i.cil-1.c --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union _ULARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _EVENT_TYPE
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _SECURITY_IMPERSONATION_LEVEL
+WARNING: Unknown simple type enum _SECURITY_IMPERSONATION_LEVEL
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _FILE_INFORMATION_CLASS
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _FSINFOCLASS
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _INTERFACE_TYPE
+WARNING: Unknown simple type enum _INTERFACE_TYPE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _SYSTEM_POWER_STATE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum __anonenum_POWER_ACTION_11
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _DEVICE_POWER_STATE
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union _POWER_STATE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _POWER_STATE_TYPE
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type enum _INTERFACE_TYPE
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type enum _INTERFACE_TYPE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _CONFIGURATION_TYPE
+WARNING: Unknown simple type enum _CONFIGURATION_TYPE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _KWAIT_REASON
+WARNING: Unknown simple type union _ULARGE_INTEGER
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _MEMORY_CACHING_TYPE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _POOL_TYPE
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _MM_PAGE_PRIORITY
+WARNING: Unknown simple type enum _SECURITY_IMPERSONATION_LEVEL
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: Unknown simple type union _LARGE_INTEGER
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _IO_ALLOCATION_ACTION
+WARNING: Unknown simple type enum _IO_ALLOCATION_ACTION
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union _LARGE_INTEGER
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _DEVICE_RELATION_TYPE
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type enum _DEVICE_USAGE_NOTIFICATION_TYPE
+Frontend failed!
