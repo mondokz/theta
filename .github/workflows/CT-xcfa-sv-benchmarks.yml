@@ -52,10 +52,15 @@ jobs:
       - run: git clone --no-checkout --depth 1 https://gitlab.com/sosy-lab/benchmarking/sv-benchmarks/
       - run: |
           cd sv-benchmarks
-          git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp"
+          git sparse-checkout set --no-cone "c/ReachSafety*.set" "c/ConcurrencySafety-*.set" c/NoDataRace-Main.set "c/**/*.prp" "c/**/*.i" "c/**/*.c"
       - run: |
           cd sv-benchmarks
           git checkout main
+      - run: zip sv-benchmarks-full.zip sv-benchmarks/c -r
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sv-benchmarks-full.zip
+          path: sv-benchmarks-full.zip
       - run: |
           cd sv-benchmarks
           cat c/*set | awk 'NF' | sed '/^#/d' | sed 's/^/c\//' >> .git/info/sparse-checkout 
@@ -89,7 +94,7 @@ jobs:
           name: sv-benchmarks.zip
           path: sv-benchmarks.zip
 
-  test:
+  test-verif:
     name: Test xcfa-cli with benchexec
     needs: [assemble, benchmarkSuite]
     runs-on: ubuntu-latest
@@ -117,35 +122,93 @@ jobs:
           sudo benchexec theta.xml --read-only-dir / --overlay-dir /home
       - uses: actions/upload-artifact@v3
         with:
-          name: benchmark-results
+          name: verif-results
+          path: theta/results
+
+  test-parse:
+    name: Test xcfa-cli parsing
+    needs: [assemble, benchmarkSuite]
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec openjdk-17-jre-headless libgomp1 libmpfr6 unzip -y
+      - uses: actions/download-artifact@v3
+        with:
+          name: theta.zip
+      - uses: actions/download-artifact@v3
+        with:
+          name: sv-benchmarks.zip
+      - run: |
+          mkdir theta
+          cd theta
+          unzip ../theta.zip
+      - run: unzip sv-benchmarks.zip
+      - run: |
+          cd theta 
+          wget https://gitlab.com/sosy-lab/sv-comp/bench-defs/-/raw/main/benchmark-defs/theta.xml
+          sed -i 's/memlimit="15 GB"/memlimit="6 GB"/g' theta.xml
+          sed -i 's/cpuCores="8"/cpuCores="2"/g' theta.xml
+          sed -i 's/timelimit="15 min"/timelimit="1 min"/g' theta.xml
+          sed -i 's/hardtimelimit="16 min"/hardtimelimit="1 min"/g' theta.xml
+          sed -i 's/witness-only/no-analysis/g' theta.xml
+          sudo chmod o+wt /sys/fs/cgroup/cpu,cpuacct/system.slice/benchexec-cgroup.service /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service
+          sudo benchexec theta.xml --read-only-dir / --overlay-dir /home
+      - uses: actions/upload-artifact@v3
+        with:
+          name: parsing-results
           path: theta/results
 
 
   deploy:
     name: Deploy results 
-    needs: test
+    needs: [test-verif, test-parse]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: benchmark-results
-          path: benchmark-results
+          name: parsing-results
+          path: parsing-results
+      - uses: actions/download-artifact@v3
+        with:
+          name: verif-results
+          path: verif-results
       - run: |
-          pushd benchmark-results
+          pushd parsing-results
+          unzip *logfiles.zip
+          rm *logfiles.zip
+          popd
+      - run: |
+          pushd verif-results
           unzip *logfiles.zip
           rm *logfiles.zip
           popd
       - run: sudo add-apt-repository ppa:sosy-lab/benchmarking && sudo apt update && sudo apt install benchexec unzip -y
-      - run: for i in benchmark-results/*xml.bz2; do table-generator $i; done
-      - run: for i in benchmark-results/*html; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
+      - run: for i in parsing-results/*xml.bz2; do table-generator $i; done
+      - run: for i in verif-results/*xml.bz2; do table-generator $i; done
+      - run: for i in parsing-results/*html; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
+      - run: for i in verif-results/*html; do sed -i 's/\.\.\/\.\.\/sv-benchmarks\//https:\/\/gitlab\.com\/sosy-lab\/benchmarking\/sv-benchmarks\/-\/raw\/main\//g' $i; done
       - run: |
-          pushd benchmark-results
+          pushd parsing-results
           rm *xml.bz2
+          rm *diff*
           find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a><br/>" }' > index.html
           popd
+      - run: |
+          pushd verif-results
+          rm *xml.bz2
+          rm *diff*
+          find * -name "*.html" | awk ' { print "<a href="$1">"$1"</a><br/>" }' > index.html
+          popd
+      - run: |
+          mkdir ct -p
+          mv parsing-results ct/
+          mv verif-results ct/
+          pushd ct
+          echo '<a href="parsing-results">Parsing Results</a><br/>' > index.html
+          echo '<a href="verif-results">Verification Results (excerpt)</a><br/>' > index.html
+          popd 
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: benchmark-results
-          target-folder: ct/benchmark-results
+          folder: ct
+          target_folder: ct
