@@ -67,7 +67,7 @@ class XcfaCegarTest {
     @Test
     fun check() {
         val stream = javaClass.getResourceAsStream(filepath)
-        val xcfa = getXcfaFromC(stream!!, explicitProperty == ErrorDetection.OVERFLOW)
+        val xcfa = getXcfaFromC(stream!!, explicitProperty == ErrorDetection.OVERFLOW, false)
 
 //        System.err.println(xcfa.toDot())
 

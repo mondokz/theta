@@ -18,6 +18,8 @@ package hu.bme.mit.theta.c2xcfa
 
 import hu.bme.mit.theta.c.frontend.dsl.gen.CLexer
 import hu.bme.mit.theta.c.frontend.dsl.gen.CParser
+import hu.bme.mit.theta.frontend.CStatistics
+import hu.bme.mit.theta.frontend.getStatistics
 import hu.bme.mit.theta.frontend.transformation.grammar.function.FunctionVisitor
 import hu.bme.mit.theta.frontend.transformation.model.statements.CProgram
 import hu.bme.mit.theta.xcfa.model.XCFA
@@ -26,7 +28,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.io.InputStream
 
-fun getXcfaFromC(stream: InputStream, checkOverflow: Boolean): XCFA {
+fun getXcfaFromC(stream: InputStream, collectStatistics: Boolean, checkOverflow: Boolean): Triple<XCFA, CStatistics?, Pair<XcfaStatistics, XcfaStatistics>?> {
     val input = CharStreams.fromStream(stream)
     val lexer = CLexer(input)
     val tokens = CommonTokenStream(lexer)
@@ -39,5 +41,26 @@ fun getXcfaFromC(stream: InputStream, checkOverflow: Boolean): XCFA {
 
     val frontendXcfaBuilder = FrontendXcfaBuilder(checkOverflow)
     val builder = frontendXcfaBuilder.buildXcfa(program)
-    return builder.build()
+    val xcfa = builder.build()
+
+    if(collectStatistics) {
+        val programStatistics = try {
+            program.getStatistics()
+        } catch (_: Exception) {
+            CStatistics(0, emptyList())
+        }
+        val unoptimizedXcfaStatistics = try {
+            builder.getStatistics()
+        } catch (_: Exception) {
+            XcfaStatistics(0, emptyList())
+        }
+        val optimizedXcfaStatistics = try {
+            xcfa.getStatistics()
+        } catch (_: Exception) {
+            XcfaStatistics(0, emptyList())
+        }
+        return Triple(xcfa, programStatistics, Pair(unoptimizedXcfaStatistics, optimizedXcfaStatistics))
+    }
+
+    return Triple(xcfa, null, null)
 }

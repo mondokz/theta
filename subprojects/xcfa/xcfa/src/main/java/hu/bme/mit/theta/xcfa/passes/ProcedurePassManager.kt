@@ -45,6 +45,7 @@ class CPasses(checkOverflow: Boolean) : ProcedurePassManager(listOf(
         HavocPromotionAndRange(),
         // Final cleanup
         UnusedVarPass(),
+        CallGraphPass()
 ))
 
 class LitmusPasses : ProcedurePassManager(emptyList())

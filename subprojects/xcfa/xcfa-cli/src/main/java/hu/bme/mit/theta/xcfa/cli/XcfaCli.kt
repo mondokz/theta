@@ -70,6 +70,9 @@ class XcfaCli(private val args: Array<String>) {
     @Parameter(names = ["--backend"], description = "Backend analysis to use")
     var backend: Backend = Backend.CEGAR
 
+    @Parameter(names = ["--backend-options"], description = "Backend configuration file")
+    var backendOptions: File? = null
+
     @Parameter(names = ["--strategy"], description = "Execution strategy")
     var strategy: Strategy = Strategy.PORTFOLIO
 
@@ -86,8 +89,11 @@ class XcfaCli(private val args: Array<String>) {
     @Parameter(names = ["--no-analysis"], description = "Executes the model transformation to XCFA and CFA, and then exits; use with --output-results to get data about the (X)CFA")
     var noAnalysis = false
 
+    @Parameter(names = ["--collect-statistics"], description = "Collect and print statistics on the input file/model")
+    var collectStatistics = false
+
     @Parameter(names = ["--print-config"], description = "Print the config to a JSON file (takes a filename as argument)")
-    var printConfigFile: String? = null
+    var printConfigFile: File? = null
 
 
     //////////// output data and statistics ////////////
@@ -112,63 +118,74 @@ class XcfaCli(private val args: Array<String>) {
     @Parameter(names = ["--validate-cex-solver"], description = "Activates a wrapper, which validates the assertions in the solver in each (SAT) check. Filters some solver issues.")
     var validateConcretizerSolver: Boolean = false
 
-    @Parameter
-    var remainingFlags: MutableList<String> = ArrayList()
-
     private fun run() {
         /// Checking flags
         try {
-            JCommander.newBuilder().addObject(this).programName(JAR_NAME).build().parse(*args)
+            val jcommander = JCommander.newBuilder()
+                    .addObject(this)
+                    .programName(JAR_NAME)
+                    .allowParameterOverwriting(true)
+                    .build()
+            jcommander.parse(*args)
         } catch (ex: ParameterException) {
             println("Invalid parameters, details:")
             ex.printStackTrace()
             ex.usage()
             exitProcess(ExitCodes.INVALID_PARAM.code)
         }
-        val explicitProperty: ErrorDetection =
-                if(property != null) {
-                    remainingFlags.add("--error-detection")
-                    if(property!!.name.endsWith("unreach-call.prp")) {
-                        remainingFlags.add(ErrorDetection.ERROR_LOCATION.toString())
-                        ErrorDetection.ERROR_LOCATION
-                    } else if (property!!.name.endsWith("no-data-race.prp")) {
-                        remainingFlags.add(ErrorDetection.DATA_RACE.toString())
-                        if(lbeLevel != LbePass.LBELevel.NO_LBE) {
-                            System.err.println("Changing LBE type to NO_LBE because the DATA_RACE property will be erroneous otherwise")
-                            lbeLevel = LbePass.LBELevel.NO_LBE
-                        }
-                        ErrorDetection.DATA_RACE
-                    } else if (property!!.name.endsWith("no-overflow.prp")) {
-                        remainingFlags.add(ErrorDetection.OVERFLOW.toString())
-                        if(lbeLevel != LbePass.LBELevel.NO_LBE) {
-                            System.err.println("Changing LBE type to NO_LBE because the OVERFLOW property will be erroneous otherwise")
-                            lbeLevel = LbePass.LBELevel.NO_LBE
-                        }
-                        ErrorDetection.OVERFLOW
-                    } else {
-                        remainingFlags.add(ErrorDetection.NO_ERROR.toString())
-                        System.err.println("Unknown property $property, using full state space exploration (no refinement)")
-                        ErrorDetection.NO_ERROR
-                    }
-                } else ErrorDetection.ERROR_LOCATION
 
         /// version
         if (versionInfo) {
             CliUtils.printVersion(System.out)
             return
         }
+
+        val cegarConfig = if(backendOptions != null)
+                GsonBuilder().create().fromJson(backendOptions!!.readText(), XcfaCegarConfig::class.java)
+            else XcfaCegarConfig()
+
+        val explicitProperty: ErrorDetection =
+                if(property != null) {
+                    if(property!!.name.endsWith("unreach-call.prp")) {
+                        cegarConfig.errorDetectionType = ErrorDetection.ERROR_LOCATION
+                        ErrorDetection.ERROR_LOCATION
+                    } else if (property!!.name.endsWith("no-data-race.prp")) {
+                        cegarConfig.errorDetectionType = ErrorDetection.DATA_RACE
+                        if(lbeLevel != LbePass.LBELevel.NO_LBE) {
+                            System.err.println("Changing LBE type to NO_LBE because the DATA_RACE property will be erroneous otherwise")
+                            lbeLevel = LbePass.LBELevel.NO_LBE
+                        }
+                        ErrorDetection.DATA_RACE
+                    } else if (property!!.name.endsWith("no-overflow.prp")) {
+                        cegarConfig.errorDetectionType = ErrorDetection.OVERFLOW
+                        if(lbeLevel != LbePass.LBELevel.NO_LBE) {
+                            System.err.println("Changing LBE type to NO_LBE because the OVERFLOW property will be erroneous otherwise")
+                            lbeLevel = LbePass.LBELevel.NO_LBE
+                        }
+                        ErrorDetection.OVERFLOW
+                    } else {
+                        cegarConfig.errorDetectionType = ErrorDetection.NO_ERROR
+                        System.err.println("Unknown property $property, using full state space exploration (no refinement)")
+                        ErrorDetection.NO_ERROR
+                    }
+                } else ErrorDetection.ERROR_LOCATION
+
+        if(printConfigFile != null) {
+            printConfigFile!!.writeText(GsonBuilder().setPrettyPrinting().create().toJson(cegarConfig))
+        }
+
         val logger = ConsoleLogger(logLevel)
 
         /// Starting frontend
         val swFrontend = Stopwatch.createStarted()
         LbePass.level = lbeLevel
 
-        val xcfa = try {
+        val (xcfa, programStatistics, xcfaStatistics) = try {
             val stream = FileInputStream(input!!)
-            val xcfaFromC = getXcfaFromC(stream, explicitProperty == ErrorDetection.OVERFLOW)
+            val (xcfaFromC, programStatistics, xcfaStatistics) = getXcfaFromC(stream, collectStatistics, explicitProperty == ErrorDetection.OVERFLOW)
             logger.write(Logger.Level.INFO, "Frontend finished: ${xcfaFromC.name}  (in ${swFrontend.elapsed(TimeUnit.MILLISECONDS)} ms)\n")
             logger.write(Logger.Level.RESULT, "Arithmetic: ${BitwiseChecker.getBitwiseOption()}\n")
-            xcfaFromC
+            Triple(xcfaFromC, programStatistics, xcfaStatistics)
         } catch (e: Exception) {
             if (stacktrace) e.printStackTrace();
             logger.write(Logger.Level.RESULT, "Frontend failed!\n")
@@ -194,6 +211,15 @@ class XcfaCli(private val args: Array<String>) {
             }
         }
 
+        if (collectStatistics) {
+            val programStatisticsStr = gsonForOutput.toJson(programStatistics)
+            val unoptimizedXcfaStatisticsStr = gsonForOutput.toJson(xcfaStatistics!!.first)
+            val optimizedXcfaStatisticsStr = gsonForOutput.toJson(xcfaStatistics.second)
+            logger.write(Logger.Level.RESULT, "Program statistics: ${programStatisticsStr}\n")
+            logger.write(Logger.Level.RESULT, "XCFA statistics (before optimization): ${unoptimizedXcfaStatisticsStr}\n")
+            logger.write(Logger.Level.RESULT, "XCFA statistics (after optimization): ${optimizedXcfaStatisticsStr}\n")
+        }
+
         if (noAnalysis) {
             logger.write(Logger.Level.RESULT, "ParsingResult Success")
             return
@@ -203,11 +229,11 @@ class XcfaCli(private val args: Array<String>) {
         val safetyResult: SafetyResult<*, *> =
                 when (strategy) {
                     Strategy.DIRECT -> {
-                        exitOnError { parseConfigFromCli().check(xcfa, logger) }
+                        exitOnError { cegarConfig.check(xcfa, logger) }
                     }
 
                     Strategy.SERVER -> {
-                        val safetyResultSupplier = parseConfigFromCli().checkInProcess(xcfa, solverHome, true, input!!.absolutePath, logger)
+                        val safetyResultSupplier = cegarConfig.checkInProcess(xcfa, solverHome, true, input!!.absolutePath, logger)
                         try {
                             safetyResultSupplier()
                         } catch (e: ErrorCodeException) {
@@ -216,7 +242,7 @@ class XcfaCli(private val args: Array<String>) {
                     }
 
                     Strategy.SERVER_DEBUG -> {
-                        val safetyResultSupplier = parseConfigFromCli().checkInProcessDebug(xcfa, solverHome, true, input!!.absolutePath, logger)
+                        val safetyResultSupplier = cegarConfig.checkInProcessDebug(xcfa, solverHome, true, input!!.absolutePath, logger)
                         try {
                             safetyResultSupplier()
                         } catch (e: ErrorCodeException) {
@@ -281,19 +307,6 @@ class XcfaCli(private val args: Array<String>) {
             }
         }
         logger.write(Logger.Level.RESULT, safetyResult.toString() + "\n")
-    }
-
-    private fun parseConfigFromCli(): XcfaCegarConfig {
-        val cegarConfig = XcfaCegarConfig()
-        try {
-            JCommander.newBuilder().addObject(cegarConfig).programName(JAR_NAME).build().parse(*remainingFlags.toTypedArray())
-        } catch (ex: ParameterException) {
-            println("Invalid parameters, details:")
-            ex.printStackTrace()
-            ex.usage()
-            exitProcess(ExitCodes.INVALID_PARAM.code)
-        }
-        return cegarConfig
     }
 
     companion object {

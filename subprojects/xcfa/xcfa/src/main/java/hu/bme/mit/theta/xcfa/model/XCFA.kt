@@ -28,7 +28,17 @@ class XCFA(
         initProcedureBuilders: List<Pair<XcfaProcedureBuilder, List<Expr<*>>>> = emptyList()
 ) {
     var procedures: Set<XcfaProcedure> =                                // procedure definitions
-            procedureBuilders.map { it.build(this) }.toSet()
+            run {
+                procedureBuilders.forEach { it.build(this) }
+                val procedures = LinkedHashSet(initProcedureBuilders.map { it.first.build(this) })
+                var names = LinkedHashSet(procedures.map { it.name })
+                do {
+                    val size = procedures.size
+                    procedures.addAll(procedureBuilders.filter { it.metaData.keys.map { Regex("reachable-from-(.*)").find(it)?.destructured?.component1() }.filterNotNull().any { names.contains(it) } }.map { it.build(this) })
+                    names = LinkedHashSet(procedures.map { it.name })
+                } while(procedures.size != size)
+                procedures
+            }
         private set
     var initProcedures: List<Pair<XcfaProcedure, List<Expr<*>>>> =      // procedure names and parameter assignments
             initProcedureBuilders.map { Pair(it.first.build(this), it.second) }
