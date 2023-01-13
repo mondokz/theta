@@ -1,5 +1,5 @@
 /*
- *  Copyright 2022 Budapest University of Technology and Economics
+ *  Copyright 2017 Budapest University of Technology and Economics
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,25 +13,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package hu.bme.mit.theta.common;
 
-package hu.bme.mit.theta.analysis.algorithm.mcm.rules;
+import com.google.common.collect.ImmutableList;
 
-import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCMRelation;
-import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCMRule;
-
-import java.util.Map;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public abstract class UnaryMCMRule extends MCMRule {
-    protected final MCMRelation e;
+public final class Tuple1<T1> extends Tuple {
 
-    protected UnaryMCMRule(MCMRelation e) {
-        this.e = checkNotNull(e);
-    }
+	private Tuple1(final T1 e1) {
+		super(ImmutableList.of(e1));
+	}
 
-    @Override
-    public void collectRelations(final Map<String, MCMRelation> relations) {
-        e.collectRelations(relations);
-    }
+	public static <T1> Tuple1<T1> of(final T1 e1) {
+		return new Tuple1<>(e1);
+	}
+
+	public T1 get1() {
+		@SuppressWarnings("unchecked") final T1 result = (T1) elem(0);
+		return result;
+	}
+
+	public <R> R unpackTo(final Function<? super T1, R> function) {
+		checkNotNull(function);
+		return function.apply(get1());
+	}
+
 }

@@ -16,9 +16,9 @@
 
 package hu.bme.mit.theta.cat.dsl;
 
-import hu.bme.mit.theta.analysis.algorithm.mcm.MCM;
-import hu.bme.mit.theta.analysis.algorithm.mcm.MCMConstraint;
-import hu.bme.mit.theta.analysis.algorithm.mcm.MCMRelation;
+import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCM;
+import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCMConstraint;
+import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCMRelation;
 import hu.bme.mit.theta.analysis.algorithm.mcm.rules.*;
 import hu.bme.mit.theta.cat.dsl.gen.CatBaseVisitor;
 import hu.bme.mit.theta.cat.dsl.gen.CatParser;

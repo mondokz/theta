@@ -1,5 +1,5 @@
 /*
- *  Copyright 2022 Budapest University of Technology and Economics
+ *  Copyright 2023 Budapest University of Technology and Economics
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,8 +14,13 @@
  *  limitations under the License.
  */
 
-package hu.bme.mit.theta.analysis.algorithm.mcm.cegar;
+package hu.bme.mit.theta.analysis.algorithm.mcm.mcm;
 
-public class MCMCegar{
+import java.util.List;
+import java.util.Map;
 
+public abstract class MCMRule {
+    public abstract void collectRelations(final Map<String, MCMRelation> relations);
+
+    public abstract void encodeEvents(final List<Integer> idList, final EventConstantLookup resultEvents, final EncodedRelationWrapper encodedRelationWrapper);
 }
