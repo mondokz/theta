@@ -20,15 +20,15 @@ import hu.bme.mit.theta.core.decl.VarDecl;
 
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 public class MemoryEvent {
     protected final MemoryEventType type;
     protected final String tag;
+    protected final int id;
 
-    public MemoryEvent(MemoryEventType type, String tag) {
+    public MemoryEvent(MemoryEventType type, String tag, int id) {
         this.type = type;
         this.tag = tag;
+        this.id = id;
     }
 
     public String tag() {
@@ -60,15 +60,12 @@ public class MemoryEvent {
     }
 
     public static abstract class MemoryIO extends MemoryEvent {
-        private final int varId;
         private final VarDecl<?> var;
         private final VarDecl<?> localVar;
-        public MemoryIO(int varId, VarDecl<?> var, VarDecl<?> localVar, MemoryEventType type, String tag) {
-            super(type, tag);
-            checkArgument(varId <= 0, "Meta event IDs must be negative!");
+        public MemoryIO(int id, VarDecl<?> var, VarDecl<?> localVar, MemoryEventType type, String tag) {
+            super(type, tag, id);
             this.var = var;
             this.localVar = localVar;
-            this.varId = varId;
         }
 
         @Override
@@ -82,11 +79,8 @@ public class MemoryEvent {
                     "var=" + var +
                     ", localVar=" + localVar +
                     ", tag=" + tag +
+                    ", id=" + id +
                     '}';
-        }
-
-        public int varId() {
-            return varId;
         }
 
         public VarDecl<?> var() {
@@ -100,8 +94,8 @@ public class MemoryEvent {
     }
 
     public static final class Read extends MemoryIO{
-        public Read(int varId, VarDecl<?> var, VarDecl<?> localVar, String tag) {
-            super(varId, var, localVar, MemoryEventType.READ, tag);
+        public Read(int id, VarDecl<?> var, VarDecl<?> localVar, String tag) {
+            super(id, var, localVar, MemoryEventType.READ, tag);
         }
 
         @Override
@@ -111,8 +105,8 @@ public class MemoryEvent {
     }
     public static final class Write extends MemoryIO{
         private final Set<VarDecl<?>> dependencies;
-        public Write(int varId, VarDecl<?> var, VarDecl<?> localVar, Set<VarDecl<?>> dependencies, String tag) {
-            super(varId, var, localVar, MemoryEventType.WRITE, tag);
+        public Write(int id, VarDecl<?> var, VarDecl<?> localVar, Set<VarDecl<?>> dependencies, String tag) {
+            super(id, var, localVar, MemoryEventType.WRITE, tag);
             this.dependencies = dependencies;
         }
 
@@ -126,8 +120,8 @@ public class MemoryEvent {
         }
     }
     public static final class Fence extends MemoryEvent{
-        public Fence(String tag) {
-            super(MemoryEventType.FENCE, tag);
+        public Fence(int id, String tag) {
+            super(MemoryEventType.FENCE, tag, id);
         }
 
         @Override
