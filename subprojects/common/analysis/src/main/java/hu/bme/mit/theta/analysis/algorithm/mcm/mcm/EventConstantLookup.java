@@ -33,7 +33,7 @@ public class EventConstantLookup {
         forward = new LinkedHashMap<>();
     }
 
-    public void add(final TupleN<Integer> key, final ConstDecl<BoolType> value) {
+    public void set(final TupleN<Integer> key, final ConstDecl<BoolType> value) {
         forward.put(key, value);
         reverse.put(value, key);
     }

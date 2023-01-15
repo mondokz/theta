@@ -76,7 +76,7 @@ public class MCMRelation {
     }
 
     public EventConstantLookup encodeEvents(final List<Integer> idList, final EncodedRelationWrapper encodedRelationWrapper) {
-        if(encodedRelationWrapper.getEventLookup(name) != null) return encodedRelationWrapper.getEventLookup(name);
+        if(encodedRelationWrapper.get(name) != null) return encodedRelationWrapper.get(name);
 
         final EventConstantLookup eventConstantLookup = new EventConstantLookup();
         encodedRelationWrapper.addEvent(name, eventConstantLookup);
@@ -89,12 +89,12 @@ public class MCMRelation {
     private void createConstants(List<Integer> idList, EventConstantLookup eventConstantLookup) {
         if(arity == 1) {
             for (final int i : idList) {
-                eventConstantLookup.add(TupleN.of(i), Const(name + "_" + i, Bool()));
+                eventConstantLookup.set(TupleN.of(i), Const(name + "_" + i, Bool()));
             }
         } else if (arity == 2) {
             for (final int i : idList) {
                 for (final int j : idList) {
-                    eventConstantLookup.add(TupleN.of(i, j), Const(name + "_" + i + "_" + j, Bool()));
+                    eventConstantLookup.set(TupleN.of(i, j), Const(name + "_" + i + "_" + j, Bool()));
                 }
             }
         } else throw new UnsupportedOperationException("Relations with arity " + arity + " not supported.");

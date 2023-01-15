@@ -41,7 +41,7 @@ public class EncodedRelationWrapper {
         encodedStatus.put(lookup, false);
     }
 
-    public EventConstantLookup getEventLookup(final String name) {
+    public EventConstantLookup get(final String name) {
         return eventLookup.get(name);
     }
 
