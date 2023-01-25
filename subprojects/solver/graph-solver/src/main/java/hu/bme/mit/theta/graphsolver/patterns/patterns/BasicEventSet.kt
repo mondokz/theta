@@ -13,17 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package hu.bme.mit.theta.graphsolver.patterns.patterns
 
-package hu.bme.mit.theta.graphsolver.solvers
+import hu.bme.mit.theta.graphsolver.compilers.GraphPatternCompiler
 
-import hu.bme.mit.theta.solver.SolverStatus
-
-interface GraphSolver<T> {
-
-    fun add(t: T)
-
-    fun getAll(): Collection<T>
-
-    fun check(): SolverStatus
-
+class BasicEventSet(val name: String) : NodePattern(){
+    override fun <T> accept(compiler: GraphPatternCompiler<*,T>): T = compiler.compile(this)
 }

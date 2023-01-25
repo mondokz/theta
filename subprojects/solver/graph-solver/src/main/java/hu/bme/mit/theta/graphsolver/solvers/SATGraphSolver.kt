@@ -16,14 +16,15 @@
 
 package hu.bme.mit.theta.graphsolver.solvers
 
+import hu.bme.mit.theta.core.type.Expr
+import hu.bme.mit.theta.core.type.booltype.BoolType
+import hu.bme.mit.theta.solver.Solver
 import hu.bme.mit.theta.solver.SolverStatus
 
-interface GraphSolver<T> {
+class SATGraphSolver(val solver: Solver): GraphSolver<Expr<BoolType>> {
+    override fun add(t: Expr<BoolType>) = solver.add(t)
 
-    fun add(t: T)
+    override fun getAll(): Collection<Expr<BoolType>> = solver.assertions
 
-    fun getAll(): Collection<T>
-
-    fun check(): SolverStatus
-
+    override fun check(): SolverStatus = solver.check()
 }

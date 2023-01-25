@@ -19,13 +19,13 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
-import hu.bme.mit.theta.analysis.algorithm.mcm.mcm.MCM;
 import hu.bme.mit.theta.cat.dsl.CatDslManager;
 import hu.bme.mit.theta.common.CliUtils;
 import hu.bme.mit.theta.common.OsHelper;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.frontend.litmus2xcfa.LitmusInterpreter;
+import hu.bme.mit.theta.graphsolver.patterns.constraints.GraphConstraint;
 import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.smtlib.SmtLibSolverManager;
@@ -35,6 +35,7 @@ import hu.bme.mit.theta.xcfa.model.XCFA;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -117,7 +118,7 @@ public class LitmusCli {
 		try {
 			final Solver solver = SolverManager.resolveSolverFactory(this.solver).createSolver();
 //
-			final MCM mcm = CatDslManager.createMCM(cat);
+			final Collection<GraphConstraint> mcm = CatDslManager.createMCM(cat);
 			logger.write(Logger.Level.MAINSTEP, "CAT model parsed successfully\n");
 			final XCFA xcfa = LitmusInterpreter.getXcfa(litmus);
 			logger.write(Logger.Level.MAINSTEP, "Litmus test parsed successfully\n");

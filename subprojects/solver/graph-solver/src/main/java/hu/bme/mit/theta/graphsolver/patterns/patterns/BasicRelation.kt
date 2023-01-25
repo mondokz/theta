@@ -17,6 +17,6 @@ package hu.bme.mit.theta.graphsolver.patterns.patterns
 
 import hu.bme.mit.theta.graphsolver.compilers.GraphPatternCompiler
 
-object EmptySet : NodePattern(){
+class BasicRelation(val name: String) : EdgePattern(){
     override fun <T> accept(compiler: GraphPatternCompiler<*,T>): T = compiler.compile(this)
 }

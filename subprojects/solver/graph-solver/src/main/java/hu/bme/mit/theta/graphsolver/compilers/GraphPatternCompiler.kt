@@ -38,7 +38,7 @@ interface GraphPatternCompiler<T1, T2> {
     fun compile(pattern: DifferenceNode): T2
     fun compile(pattern: Domain): T2
     fun compile(pattern: EmptyRelation): T2
-    fun compile(pattern: EmptySet): T2
+    fun compile(pattern: EmptyRel): T2
     fun compile(pattern: IdentityClosure): T2
     fun compile(pattern: Intersection): T2
     fun compile(pattern: IntersectionNode): T2
@@ -51,4 +51,6 @@ interface GraphPatternCompiler<T1, T2> {
     fun compile(pattern: TransitiveClosure): T2
     fun compile(pattern: Union): T2
     fun compile(pattern: UnionNode): T2
+    fun compile(pattern: BasicEventSet): T2
+    fun compile(pattern: BasicRelation): T2
 }

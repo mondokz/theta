@@ -92,7 +92,7 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
         return events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), False())  } }.flatten().toMap()
     }
 
-    override fun compile(pattern: EmptySet): Map<Tuple, Expr<BoolType>> {
+    override fun compile(pattern: EmptyRel): Map<Tuple, Expr<BoolType>> {
         return events.associate { a -> Pair(Tuple1.of(a), False()) }
     }
 
@@ -196,5 +196,13 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
 
         val ret = events.map { a -> Pair(Tuple1.of(a), And(op1Compiled[Tuple1.of(a)], op2Compiled[Tuple1.of(a)])) }
         return ret.toMap()
+    }
+
+    override fun compile(pattern: BasicEventSet): Map<Tuple, Expr<BoolType>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun compile(pattern: BasicRelation): Map<Tuple, Expr<BoolType>> {
+        TODO("Not yet implemented")
     }
 }
