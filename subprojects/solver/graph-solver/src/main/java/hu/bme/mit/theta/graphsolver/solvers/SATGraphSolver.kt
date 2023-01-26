@@ -16,6 +16,7 @@
 
 package hu.bme.mit.theta.graphsolver.solvers
 
+import hu.bme.mit.theta.core.model.Valuation
 import hu.bme.mit.theta.core.type.Expr
 import hu.bme.mit.theta.core.type.booltype.BoolType
 import hu.bme.mit.theta.solver.Solver
@@ -27,4 +28,5 @@ class SATGraphSolver(val solver: Solver): GraphSolver<Expr<BoolType>> {
     override fun getAll(): Collection<Expr<BoolType>> = solver.assertions
 
     override fun check(): SolverStatus = solver.check()
+    override fun getModel(): Valuation = solver.model
 }

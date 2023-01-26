@@ -28,28 +28,46 @@ import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 import java.util.*
 
-class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr<BoolType>>> {
+class Pattern2ExprCompiler(
+        private val events: List<Int>,
+        private val facts: Map<Pair<String, Tuple>, Boolean>
+): GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr<BoolType>>> {
+
+    private val transitiveConstraints = ArrayList<Expr<BoolType>>()
+
     override fun compile(acyclic: Acyclic): Expr<BoolType> =
         Irreflexive(TransitiveClosure(acyclic.constrainedRule)).accept(this)
 
     override fun compile(cyclic: Cyclic): Expr<BoolType>  =
         Reflexive(TransitiveClosure(cyclic.constrainedRule)).accept(this)
 
-    override fun compile(empty: Empty): Expr<BoolType> =
-        Not(Nonempty(empty.constrainedRule).accept(this))
+    override fun compile(empty: Empty): Expr<BoolType> {
+        val compiledRule = empty.constrainedRule.accept(this)
+        val ret = And(Not(Or(compiledRule.values)), And(transitiveConstraints))
+        transitiveConstraints.clear()
+        return ret
+    }
 
     override fun compile(nonempty: Nonempty): Expr<BoolType> {
         val compiledRule = nonempty.constrainedRule.accept(this)
-        return Or(compiledRule.values)
+        val ret = And(Or(compiledRule.values), And(transitiveConstraints))
+        transitiveConstraints.clear()
+        return ret
     }
 
     override fun compile(reflexive: Reflexive): Expr<BoolType> {
         val compiled = reflexive.constrainedRule.accept(this)
-        return Or(events.map { compiled[Tuple2.of(it, it)] })
+        val ret = And(Or(events.map { compiled[Tuple2.of(it, it)] }), And(transitiveConstraints))
+        transitiveConstraints.clear()
+        return ret
     }
 
-    override fun compile(irreflexive: Irreflexive): Expr<BoolType> =
-        Not(Reflexive(irreflexive.constrainedRule).accept(this))
+    override fun compile(irreflexive: Irreflexive): Expr<BoolType> {
+        val compiled = irreflexive.constrainedRule.accept(this)
+        val ret = And(Not(Or(events.map { compiled[Tuple2.of(it, it)] })), And(transitiveConstraints))
+        transitiveConstraints.clear()
+        return ret
+    }
 
     override fun compile(pattern: CartesianProduct): Map<Tuple, Expr<BoolType>> {
         val op1Compiled = pattern.op1.accept(this)
@@ -131,16 +149,20 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
 
     override fun compile(pattern: ReflexiveTransitiveClosure): Map<Tuple, Expr<BoolType>> {
         val opCompiled = pattern.op.accept(this)
-        val consts = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), Const("TC_" + Random().nextInt() + "_" + a + "_" + b, Bool())) } }.flatten().toMap()
+        val consts = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), Const("RTC_" + Random().nextInt() + "_" + a + "_" + b, Bool())) } }.flatten().toMap()
 
         val constraints = And(events.map {
             a -> events.map {
-                b -> Imply(Or(opCompiled[Tuple2.of(a, b)], Or(events.map { c ->
-                    And(consts[Tuple2.of(a, c)]!!.ref, consts[Tuple2.of(c, b)]!!.ref)
+                b -> Iff(Or(opCompiled[Tuple2.of(a, b)], Or(events.map { c ->
+                    Or(
+                        And(opCompiled[Tuple2.of(a, c)], consts[Tuple2.of(c, b)]!!.ref),
+                        And(consts[Tuple2.of(a, c)]!!.ref, opCompiled[Tuple2.of(c, b)])
+                    )
                 })), consts[Tuple2.of(a, b)]!!.ref)
             }
         }.flatten())
-        val ret = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), if(a == b) True() else And(consts[Tuple2.of(a, b)]!!.ref, constraints))} }
+        transitiveConstraints.add(constraints)
+        val ret = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), if(a == b) True() else consts[Tuple2.of(a, b)]!!.ref)} }
         return ret.flatten().toMap()
     }
 
@@ -153,7 +175,7 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
 
         val ret = events.map {
             a -> events.map {
-                b -> Pair(Tuple2.of(a, b), Or(events.map { c ->
+                b -> Pair(Tuple2.of(a, b), Or(events.filter { c -> a != c && b != c }.map { c ->
                     And(op1Compiled[Tuple2.of(a, c)], op2Compiled[Tuple2.of(c, b)])
                 }))
             }
@@ -168,17 +190,22 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
     }
 
     override fun compile(pattern: TransitiveClosure): Map<Tuple, Expr<BoolType>> {
+        val uuid = Random().nextInt()
         val opCompiled = pattern.op.accept(this)
-        val consts = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), Const("TC_" + Random().nextInt() + "_" + a + "_" + b, Bool())) } }.flatten().toMap()
+        val consts = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), Const("TC_" + uuid  + "_" + a + "_" + b, Bool())) } }.flatten().toMap()
 
         val constraints = And(events.map {
             a -> events.map {
-                b -> Imply(Or(opCompiled[Tuple2.of(a, b)], Or(events.map { c ->
-                    And(consts[Tuple2.of(a, c)]!!.ref, consts[Tuple2.of(c, b)]!!.ref)
+                b -> Iff(Or(opCompiled[Tuple2.of(a, b)], Or(events.filter { c -> a != c && b != c }.map { c ->
+                    Or(
+                        And(opCompiled[Tuple2.of(a, c)], consts[Tuple2.of(c, b)]!!.ref),
+                        And(consts[Tuple2.of(a, c)]!!.ref, opCompiled[Tuple2.of(c, b)])
+                    )
                 })), consts[Tuple2.of(a, b)]!!.ref)
             }
         }.flatten())
-        val ret = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), And(consts[Tuple2.of(a, b)]!!.ref, constraints))} }
+        transitiveConstraints.add(constraints)
+        val ret = events.map { a -> events.map { b -> Pair(Tuple2.of(a, b), consts[Tuple2.of(a, b)]!!.ref)} }
         return ret.flatten().toMap()
     }
 
@@ -199,10 +226,25 @@ class Pattern2ExprCompiler(private val events: List<Int>): GraphPatternCompiler<
     }
 
     override fun compile(pattern: BasicEventSet): Map<Tuple, Expr<BoolType>> {
-        TODO("Not yet implemented")
+        return events.associate { a -> Pair(Tuple1.of(a),
+                    when (facts[Pair(pattern.name, Tuple1.of(a))]) {
+                        false -> False()
+                        true -> True()
+                        null -> Const("", Bool()).ref
+                    })
+        }
     }
 
     override fun compile(pattern: BasicRelation): Map<Tuple, Expr<BoolType>> {
-        TODO("Not yet implemented")
+        return events.map { a ->
+            events.map { b ->
+                Pair(Tuple2.of(a, b),
+                        when (facts[Pair(pattern.name, Tuple2.of(a, b))]) {
+                            false -> False()
+                            true -> True()
+                            null -> Const(pattern.name + "_" + a + "-" + b, Bool()).ref
+                        })
+            }
+        }.flatten().toMap()
     }
 }

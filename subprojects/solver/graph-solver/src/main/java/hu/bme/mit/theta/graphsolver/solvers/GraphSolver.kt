@@ -16,6 +16,7 @@
 
 package hu.bme.mit.theta.graphsolver.solvers
 
+import hu.bme.mit.theta.core.model.Valuation
 import hu.bme.mit.theta.solver.SolverStatus
 
 interface GraphSolver<T> {
@@ -25,5 +26,7 @@ interface GraphSolver<T> {
     fun getAll(): Collection<T>
 
     fun check(): SolverStatus
+
+    fun getModel(): Valuation
 
 }
