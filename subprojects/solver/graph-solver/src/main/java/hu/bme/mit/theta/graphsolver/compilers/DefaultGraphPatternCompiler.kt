@@ -17,12 +17,14 @@
 package hu.bme.mit.theta.graphsolver.compilers
 
 import hu.bme.mit.theta.common.Tuple
+import hu.bme.mit.theta.core.model.Valuation
 import hu.bme.mit.theta.graphsolver.ThreeVL
 import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 
 abstract class DefaultGraphPatternCompiler<T> : GraphPatternCompiler<T?, T?> {
-    override fun addFacts(events: List<Int>, edges: Map<Pair<String, Tuple>, ThreeVL>) {}
+    override fun addEvents(events: List<Int>) {}
+    override fun addFacts(edges: Map<Pair<String, Tuple>, ThreeVL>) {}
     override fun compile(acyclic: Acyclic): T? = acyclic.constrainedRule.accept(this)
     override fun compile(cyclic: Cyclic): T? = cyclic.constrainedRule.accept(this)
     override fun compile(empty: Empty): T? = empty.constrainedRule.accept(this)
@@ -52,4 +54,6 @@ abstract class DefaultGraphPatternCompiler<T> : GraphPatternCompiler<T?, T?> {
     override fun compile(pattern: UnionNode): T? { pattern.op1.accept(this); pattern.op2.accept(this); return null }
     override fun compile(pattern: BasicEventSet): T? = null
     override fun compile(pattern: BasicRelation): T? = null
+
+    override fun getCompleteGraph(model: Valuation): Pair<List<Int>, Map<Pair<String, Tuple>, ThreeVL>> { error("Not implemented") }
 }

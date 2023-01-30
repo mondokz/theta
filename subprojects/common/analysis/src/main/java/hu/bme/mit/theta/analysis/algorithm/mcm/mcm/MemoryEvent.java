@@ -36,10 +36,16 @@ public class MemoryEvent {
     }
 
     public enum MemoryEventType {
-        READ,
-        WRITE,
-        FENCE,
-        META
+        READ("R"),
+        WRITE("W"),
+        FENCE("F"),
+        META("M");
+
+        public final String label;
+
+        private MemoryEventType(String label) {
+            this.label = label;
+        }
     }
 
     public MemoryEventType type() {

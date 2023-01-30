@@ -18,6 +18,7 @@ include(
 
         "xcfa/xcfa",
         "xcfa/cat",
+        "xcfa/exec-graph-cli",
         "xcfa/c2xcfa",
         "xcfa/litmus2xcfa",
         "xcfa/xcfa-analysis",

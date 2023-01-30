@@ -19,7 +19,9 @@ package hu.bme.mit.theta.graphsolver.compilers.pattern2expr
 import hu.bme.mit.theta.common.Tuple
 import hu.bme.mit.theta.common.Tuple1
 import hu.bme.mit.theta.common.Tuple2
+import hu.bme.mit.theta.core.decl.ConstDecl
 import hu.bme.mit.theta.core.decl.Decls.Const
+import hu.bme.mit.theta.core.model.Valuation
 import hu.bme.mit.theta.core.type.Expr
 import hu.bme.mit.theta.core.type.booltype.BoolExprs.*
 import hu.bme.mit.theta.core.type.booltype.BoolType
@@ -28,16 +30,26 @@ import hu.bme.mit.theta.graphsolver.compilers.GraphPatternCompiler
 import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 class Pattern2ExprCompiler: GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr<BoolType>>> {
     private val events = ArrayList<Int>()
     private val facts = LinkedHashMap<Pair<String, Tuple>, ThreeVL>()
+    private val namedLookup = LinkedHashMap<Pair<String, Tuple>, ConstDecl<BoolType>>()
 
     private val transitiveConstraints = ArrayList<Expr<BoolType>>()
-    override fun addFacts(events: List<Int>, edges: Map<Pair<String, Tuple>, ThreeVL>) {
-        check(this.events.isEmpty()) {"Use addFacts after initialization!"}
+    override fun addEvents(events: List<Int>) {
         this.events.addAll(events)
-        this.facts.putAll(edges)
+    }
+    override fun addFacts(edges: Map<Pair<String, Tuple>, ThreeVL>) {
+        this.events.addAll(events)
+    }
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun getCompleteGraph(model: Valuation): Pair<List<Int>, Map<Pair<String, Tuple>, ThreeVL>> {
+        val ret = LinkedHashMap<Pair<String, Tuple>, ThreeVL>()
+        ret.putAll(facts)
+        ret.putAll(namedLookup.map { n -> model.eval(n.value).map { Pair(n.key, if (it == True()) ThreeVL.TRUE else ThreeVL.FALSE) }.getOrNull() }.filterNotNull().toMap())
+        return Pair(events, ret)
     }
 
     override fun compile(acyclic: Acyclic): Expr<BoolType> =
@@ -235,7 +247,11 @@ class Pattern2ExprCompiler: GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr
                     when (facts[Pair(pattern.name, Tuple1.of(a))]) {
                         ThreeVL.FALSE -> False()
                         ThreeVL.TRUE -> True()
-                        ThreeVL.UNKNOWN, null -> Const("", Bool()).ref
+                        ThreeVL.UNKNOWN, null -> namedLookup.getOrElse(Pair(pattern.name, Tuple1.of(a))) {
+                            val cnst = Const(pattern.name + "_" + a, Bool())
+                            namedLookup[Pair(pattern.name, Tuple1.of(a))] = cnst
+                            cnst
+                        }.ref
                     })
         }
     }
@@ -247,7 +263,11 @@ class Pattern2ExprCompiler: GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr
                         when (facts[Pair(pattern.name, Tuple2.of(a, b))]) {
                             ThreeVL.FALSE -> False()
                             ThreeVL.TRUE -> True()
-                            ThreeVL.UNKNOWN, null -> Const(pattern.name + "_" + a + "-" + b, Bool()).ref
+                            ThreeVL.UNKNOWN, null -> namedLookup.getOrElse(Pair(pattern.name, Tuple2.of(a, b))) {
+                                    val cnst = Const(pattern.name + "_" + a + "-" + b, Bool())
+                                    namedLookup[Pair(pattern.name, Tuple2.of(a, b))] = cnst
+                                    cnst
+                                }.ref
                         })
             }
         }.flatten().toMap()
