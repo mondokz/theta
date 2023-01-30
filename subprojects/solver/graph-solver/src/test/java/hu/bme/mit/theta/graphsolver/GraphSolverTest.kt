@@ -28,30 +28,40 @@ import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
+import org.junit.runners.Parameterized.Parameter
 import java.io.IOException
 import java.util.*
 
 @RunWith(Parameterized::class)
 class GraphSolverTest<T> {
-    @Parameterized.Parameter(0)
+    @Parameter(0)
     @JvmField
     var constraint: GraphConstraint? = null
 
-    @Parameterized.Parameter(1)
+    @Parameter(1)
     @JvmField
     var compiler: GraphPatternCompiler<T, *>? = null
 
-    @Parameterized.Parameter(2)
+    @Parameter(2)
+    @JvmField
+    var graphEvents: List<Int>? = null
+
+    @Parameter(3)
+    @JvmField
+    var graphEdges: Map<Pair<String, Tuple>, ThreeVL>? = null
+
+    @Parameter(4)
     @JvmField
     var solver: GraphSolver<T>? = null
 
-    @Parameterized.Parameter(3)
+    @Parameter(5)
     @JvmField
     var allowed: Boolean = false
 
     @Test
     @Throws(IOException::class)
     fun test() {
+        compiler!!.addFacts(graphEvents!!, graphEdges!!)
         val compiledConstraint = constraint!!.accept(compiler!!)
         solver!!.add(compiledConstraint)
         val status = solver!!.check()
@@ -60,40 +70,40 @@ class GraphSolverTest<T> {
 
     companion object {
 
-        private val smallLine: Pair<List<Int>, Map<Pair<String, Tuple>, Boolean>> = Pair(listOf(1, 2, 3), mapOf(
-                Pair(Pair("po", Tuple2.of(1, 1)), false),
-                Pair(Pair("po", Tuple2.of(1, 2)), true),
-                Pair(Pair("po", Tuple2.of(1, 3)), false),
-                Pair(Pair("po", Tuple2.of(2, 1)), false),
-                Pair(Pair("po", Tuple2.of(2, 2)), false),
-                Pair(Pair("po", Tuple2.of(2, 3)), true),
-                Pair(Pair("po", Tuple2.of(3, 1)), false),
-                Pair(Pair("po", Tuple2.of(3, 2)), false),
-                Pair(Pair("po", Tuple2.of(3, 3)), false),
+        private val smallLine: Pair<List<Int>, Map<Pair<String, Tuple>, ThreeVL>> = Pair(listOf(1, 2, 3), mapOf(
+                Pair(Pair("po", Tuple2.of(1, 1)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(1, 2)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(1, 3)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 1)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 2)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 3)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 1)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(3, 2)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(3, 3)), ThreeVL.FALSE),
         ))
 
-        private val smallCycle: Pair<List<Int>, Map<Pair<String, Tuple>, Boolean>>  = Pair(listOf(1, 2, 3), mapOf(
-                Pair(Pair("po", Tuple2.of(1, 1)), false),
-                Pair(Pair("po", Tuple2.of(1, 2)), true),
-                Pair(Pair("po", Tuple2.of(1, 3)), false),
-                Pair(Pair("po", Tuple2.of(2, 1)), false),
-                Pair(Pair("po", Tuple2.of(2, 2)), false),
-                Pair(Pair("po", Tuple2.of(2, 3)), true),
-                Pair(Pair("po", Tuple2.of(3, 1)), true),
-                Pair(Pair("po", Tuple2.of(3, 2)), false),
-                Pair(Pair("po", Tuple2.of(3, 3)), false),
+        private val smallCycle: Pair<List<Int>, Map<Pair<String, Tuple>, ThreeVL>>  = Pair(listOf(1, 2, 3), mapOf(
+                Pair(Pair("po", Tuple2.of(1, 1)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(1, 2)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(1, 3)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 1)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 2)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(2, 3)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 1)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 2)), ThreeVL.FALSE),
+                Pair(Pair("po", Tuple2.of(3, 3)), ThreeVL.FALSE),
         ))
 
-        private val smallFull: Pair<List<Int>, Map<Pair<String, Tuple>, Boolean>>  = Pair(listOf(1, 2, 3), mapOf(
-                Pair(Pair("po", Tuple2.of(1, 1)), true),
-                Pair(Pair("po", Tuple2.of(1, 2)), true),
-                Pair(Pair("po", Tuple2.of(1, 3)), true),
-                Pair(Pair("po", Tuple2.of(2, 1)), true),
-                Pair(Pair("po", Tuple2.of(2, 2)), true),
-                Pair(Pair("po", Tuple2.of(2, 3)), true),
-                Pair(Pair("po", Tuple2.of(3, 1)), true),
-                Pair(Pair("po", Tuple2.of(3, 2)), true),
-                Pair(Pair("po", Tuple2.of(3, 3)), true),
+        private val smallFull: Pair<List<Int>, Map<Pair<String, Tuple>, ThreeVL>>  = Pair(listOf(1, 2, 3), mapOf(
+                Pair(Pair("po", Tuple2.of(1, 1)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(1, 2)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(1, 3)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(2, 1)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(2, 2)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(2, 3)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 1)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 2)), ThreeVL.TRUE),
+                Pair(Pair("po", Tuple2.of(3, 3)), ThreeVL.TRUE),
         ))
 
 
@@ -103,73 +113,97 @@ class GraphSolverTest<T> {
             return Arrays.asList(
                     arrayOf(
                             Acyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallLine.first, smallLine.second),
+                            Pattern2ExprCompiler(),
+                            smallLine.first,
+                            smallLine.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Acyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallCycle.first, smallCycle.second),
+                            Pattern2ExprCompiler(),
+                            smallCycle.first,
+                            smallCycle.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),
                     arrayOf(
                             Acyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallFull.first, smallFull.second),
+                            Pattern2ExprCompiler(),
+                            smallFull.first,
+                            smallFull.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),
                     arrayOf(
                             Cyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallLine.first, smallLine.second),
+                            Pattern2ExprCompiler(),
+                            smallLine.first,
+                            smallLine.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),
                     arrayOf(
                             Cyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallCycle.first, smallCycle.second),
+                            Pattern2ExprCompiler(),
+                            smallCycle.first,
+                            smallCycle.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Cyclic(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallFull.first, smallFull.second),
+                            Pattern2ExprCompiler(),
+                            smallFull.first,
+                            smallFull.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Reflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallLine.first, smallLine.second),
+                            Pattern2ExprCompiler(),
+                            smallLine.first,
+                            smallLine.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),
                     arrayOf(
                             Reflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallCycle.first, smallCycle.second),
+                            Pattern2ExprCompiler(),
+                            smallCycle.first,
+                            smallCycle.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),
                     arrayOf(
                             Reflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallFull.first, smallFull.second),
+                            Pattern2ExprCompiler(),
+                            smallFull.first,
+                            smallFull.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Irreflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallLine.first, smallLine.second),
+                            Pattern2ExprCompiler(),
+                            smallLine.first,
+                            smallLine.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Irreflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallCycle.first, smallCycle.second),
+                            Pattern2ExprCompiler(),
+                            smallCycle.first,
+                            smallCycle.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             true
                     ),
                     arrayOf(
                             Irreflexive(BasicRelation("po")),
-                            Pattern2ExprCompiler(smallFull.first, smallFull.second),
+                            Pattern2ExprCompiler(),
+                            smallFull.first,
+                            smallFull.second,
                             SATGraphSolver(Z3SolverFactory.getInstance().createSolver()),
                             false
                     ),

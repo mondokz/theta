@@ -16,10 +16,13 @@
 
 package hu.bme.mit.theta.graphsolver.compilers
 
+import hu.bme.mit.theta.common.Tuple
+import hu.bme.mit.theta.graphsolver.ThreeVL
 import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 
 abstract class DefaultGraphPatternCompiler<T> : GraphPatternCompiler<T?, T?> {
+    override fun addFacts(events: List<Int>, edges: Map<Pair<String, Tuple>, ThreeVL>) {}
     override fun compile(acyclic: Acyclic): T? = acyclic.constrainedRule.accept(this)
     override fun compile(cyclic: Cyclic): T? = cyclic.constrainedRule.accept(this)
     override fun compile(empty: Empty): T? = empty.constrainedRule.accept(this)

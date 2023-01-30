@@ -23,17 +23,22 @@ import hu.bme.mit.theta.core.decl.Decls.Const
 import hu.bme.mit.theta.core.type.Expr
 import hu.bme.mit.theta.core.type.booltype.BoolExprs.*
 import hu.bme.mit.theta.core.type.booltype.BoolType
+import hu.bme.mit.theta.graphsolver.ThreeVL
 import hu.bme.mit.theta.graphsolver.compilers.GraphPatternCompiler
 import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 import java.util.*
 
-class Pattern2ExprCompiler(
-        private val events: List<Int>,
-        private val facts: Map<Pair<String, Tuple>, Boolean>
-): GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr<BoolType>>> {
+class Pattern2ExprCompiler: GraphPatternCompiler<Expr<BoolType>, Map<Tuple, Expr<BoolType>>> {
+    private val events = ArrayList<Int>()
+    private val facts = LinkedHashMap<Pair<String, Tuple>, ThreeVL>()
 
     private val transitiveConstraints = ArrayList<Expr<BoolType>>()
+    override fun addFacts(events: List<Int>, edges: Map<Pair<String, Tuple>, ThreeVL>) {
+        check(this.events.isEmpty()) {"Use addFacts after initialization!"}
+        this.events.addAll(events)
+        this.facts.putAll(edges)
+    }
 
     override fun compile(acyclic: Acyclic): Expr<BoolType> =
         Irreflexive(TransitiveClosure(acyclic.constrainedRule)).accept(this)
@@ -228,9 +233,9 @@ class Pattern2ExprCompiler(
     override fun compile(pattern: BasicEventSet): Map<Tuple, Expr<BoolType>> {
         return events.associate { a -> Pair(Tuple1.of(a),
                     when (facts[Pair(pattern.name, Tuple1.of(a))]) {
-                        false -> False()
-                        true -> True()
-                        null -> Const("", Bool()).ref
+                        ThreeVL.FALSE -> False()
+                        ThreeVL.TRUE -> True()
+                        ThreeVL.UNKNOWN, null -> Const("", Bool()).ref
                     })
         }
     }
@@ -240,9 +245,9 @@ class Pattern2ExprCompiler(
             events.map { b ->
                 Pair(Tuple2.of(a, b),
                         when (facts[Pair(pattern.name, Tuple2.of(a, b))]) {
-                            false -> False()
-                            true -> True()
-                            null -> Const(pattern.name + "_" + a + "-" + b, Bool()).ref
+                            ThreeVL.FALSE -> False()
+                            ThreeVL.TRUE -> True()
+                            ThreeVL.UNKNOWN, null -> Const(pattern.name + "_" + a + "-" + b, Bool()).ref
                         })
             }
         }.flatten().toMap()

@@ -16,6 +16,8 @@
 
 package hu.bme.mit.theta.graphsolver.compilers
 
+import hu.bme.mit.theta.common.Tuple
+import hu.bme.mit.theta.graphsolver.ThreeVL
 import hu.bme.mit.theta.graphsolver.patterns.constraints.*
 import hu.bme.mit.theta.graphsolver.patterns.patterns.*
 
@@ -24,6 +26,7 @@ import hu.bme.mit.theta.graphsolver.patterns.patterns.*
  * @param T2 Compiled pattern type
  */
 interface GraphPatternCompiler<T1, T2> {
+    fun addFacts(events: List<Int>, edges: Map<Pair<String, Tuple>, ThreeVL>)
     fun compile(acyclic: Acyclic): T1
     fun compile(cyclic: Cyclic): T1
     fun compile(empty: Empty): T1
