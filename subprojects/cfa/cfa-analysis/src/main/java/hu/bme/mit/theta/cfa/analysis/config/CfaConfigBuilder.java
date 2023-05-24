@@ -92,6 +92,11 @@ import java.util.stream.Collectors;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 
 public class CfaConfigBuilder {
+
+	public enum Algorithm {
+		CEGAR,
+		KINDUCTION
+	}
 	public enum Domain {
 		EXPL, PRED_BOOL, PRED_CART, PRED_SPLIT
 	}

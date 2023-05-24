@@ -13,8 +13,6 @@ import hu.bme.mit.theta.analysis.expl.ExplState;
 import hu.bme.mit.theta.analysis.expr.refinement.PruneStrategy;
 import hu.bme.mit.theta.analysis.utils.ArgVisualizer;
 import hu.bme.mit.theta.analysis.utils.TraceVisualizer;
-import hu.bme.mit.theta.cfa.CFA;
-import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.CliUtils;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
@@ -43,11 +41,8 @@ import hu.bme.mit.theta.xsts.pnml.PnmlParser;
 import hu.bme.mit.theta.xsts.pnml.PnmlToXSTS;
 import hu.bme.mit.theta.xsts.pnml.elements.PnmlNet;
 
-import java.awt.geom.QuadCurve2D;
 import java.io.*;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -59,16 +54,11 @@ public class XstsCli {
     private final String[] args;
     private final TableWriter writer;
 
-    enum Algorithm {
-        CEGAR,
-        KINDUCTION
-    }
+    @Parameter(names = {"--algorithm"}, description = "Algorithm")
+    Algorithm  algorithm = Algorithm.CEGAR;
 
     @Parameter(names = {"--domain"}, description = "Abstract domain")
     Domain domain = Domain.PRED_CART;
-
-    @Parameter(names = {"--algorithm"}, description = "Algorithm")
-    Algorithm algorithm = Algorithm.CEGAR;
 
     @Parameter(names = {"--refinement"}, description = "Refinement strategy")
     Refinement refinement = Refinement.SEQ_ITP;
@@ -165,42 +155,37 @@ public class XstsCli {
 
         try {
             final Stopwatch sw = Stopwatch.createStarted();
-            final XSTS xsts;
-            if (model.endsWith(".cfa")) {
-                xsts = CfaToXsts.create(loadCFAModel());
-            } else {
-                xsts = loadModel();
-            }
+            final XSTS xsts = loadModel();
 
-            SafetyResult<?, ?> status = null;
             if (metrics) {
                 XstsMetrics.printMetrics(logger, xsts);
                 return;
             }
+
+            final SafetyResult<?, ?> status;
             if (algorithm.equals(Algorithm.CEGAR)) {
                 final XstsConfig<?, ?, ?> configuration = buildConfiguration(xsts);
                 status = check(configuration);
                 sw.stop();
             } else if (algorithm.equals(Algorithm.KINDUCTION)) {
 
-                var init = StmtUtils.toExpr(xsts.getInit(), VarIndexingFactory.indexing(0));
-                Expr<BoolType> ini;
+                final StmtUnfoldResult initUnfoldResult = StmtUtils.toExpr(xsts.getInit(), VarIndexingFactory.indexing(0));
+                final Expr<BoolType> init  = And(And(initUnfoldResult.getExprs()), xsts.getInitFormula());
+                final var firstIndex = initUnfoldResult.getIndexing();
 
+                final var envTran = Stmts.SequenceStmt(List.of(xsts.getEnv(), xsts.getTran()));
+                final StmtUnfoldResult envTranUnfoldResult = StmtUtils.toExpr(envTran, VarIndexingFactory.indexing(0));
+                final Expr<BoolType> trans = And(envTranUnfoldResult.getExprs());
+                final var offsetIndex = envTranUnfoldResult.getIndexing();
 
-                Expr<BoolType> initExpr = init.getExprs().iterator().next();
-                ini = And(initExpr, xsts.getInitFormula());
-                var firstIndex = init.getIndexing();
-
-                var merged = Stmts.SequenceStmt(List.of(xsts.getEnv(), xsts.getTran()));
-                StmtUnfoldResult trans = StmtUtils.toExpr(merged, VarIndexingFactory.indexing(0));
-                Expr<BoolType> transExpr = trans.getExprs().iterator().next();
-                var offset = trans.getIndexing();
-
-                var checker = new KIndChecker<XstsState<ExplState>, XstsAction>(transExpr, ini, xsts.getProp(), Integer.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), firstIndex, offset, (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars());
+                var checker = new KIndChecker<XstsState<ExplState>, XstsAction>(trans, init, xsts.getProp(), Integer.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), firstIndex, offsetIndex, (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars());
                 status = checker.check(null);
                 logger.write(Logger.Level.RESULT, "%s%n", status);
                 sw.stop();
+            } else {
+                throw new IllegalArgumentException("Unknown algorithm: " + algorithm);
             }
+
             printResult(status, xsts, sw.elapsed(TimeUnit.MILLISECONDS));
             if (status.isUnsafe() && cexfile != null) {
                 writeCex(status.asUnsafe(), xsts);
@@ -249,16 +234,6 @@ public class XstsCli {
             throw new Exception("Could not parse XSTS: " + ex.getMessage(), ex);
         } finally {
             if (propStream != null) propStream.close();
-        }
-    }
-
-    private CFA loadCFAModel() throws Exception {
-        try (InputStream inputStream = new FileInputStream(model)) {
-            try {
-                return CfaDslManager.createCfa(inputStream);
-            } catch (final Exception ex) {
-                throw new Exception("Could not parse CFA: " + ex.getMessage(), ex);
-            }
         }
     }
 

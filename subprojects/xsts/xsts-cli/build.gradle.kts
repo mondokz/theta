@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":theta-common"))
     implementation(project(":theta-solver-z3"))
     implementation(project(":theta-solver"))
-    implementation(project(":theta-cfa"))
 }
 
 application {
