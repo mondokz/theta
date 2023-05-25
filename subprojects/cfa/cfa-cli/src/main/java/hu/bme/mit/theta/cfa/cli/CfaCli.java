@@ -308,7 +308,8 @@ public class CfaCli {
 	}
 
 	private void printResult(final SafetyResult<?, ?> status, final long totalTimeMs) {
-		final CegarStatistics stats = (CegarStatistics) status.getStats().get();
+		final CegarStatistics stats = (CegarStatistics)
+				status.getStats().orElse(new CegarStatistics(0, 0, 0, 0));
 		if (benchmarkMode) {
 			writer.cell(status.isSafe());
 			writer.cell(totalTimeMs);
