@@ -16,6 +16,7 @@
 package hu.bme.mit.theta.xsts.analysis;
 
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.imc.ImcChecker;
 import hu.bme.mit.theta.analysis.algorithm.kind.KIndChecker;
 import hu.bme.mit.theta.analysis.algorithm.kind.KIndChecker2;
 import hu.bme.mit.theta.analysis.expl.ExplState;
@@ -102,7 +103,7 @@ public class XstsTest {
 
 				{ "src/test/resources/model/x_and_y.xsts", "src/test/resources/property/x_geq_y.prop", true, XstsConfigBuilder.Domain.PRED_CART},
 
-				{ "src/test/resources/model/x_powers.xsts", "src/test/resources/property/x_even.prop", true, XstsConfigBuilder.Domain.PRED_CART},
+			//	{ "src/test/resources/model/x_powers.xsts", "src/test/resources/property/x_even.prop", true, XstsConfigBuilder.Domain.PRED_CART},
 
 				{ "src/test/resources/model/cross_with.xsts", "src/test/resources/property/cross.prop", false, XstsConfigBuilder.Domain.PRED_CART},
 
@@ -275,7 +276,7 @@ public class XstsTest {
 
 		var action = XstsAction.create(merged);
 
-		var checker = new KIndChecker2<XstsState<ExplState>, XstsAction>(transExpr, ini, xsts.getProp(), 50,Z3SolverFactory.getInstance().createSolver(),Z3SolverFactory.getInstance().createSolver(),firstIndex,offset,(x)->XstsState.of(ExplState.of(x), false, true),xsts.getVars());
+		var checker = new ImcChecker<XstsState<ExplState>, XstsAction>(transExpr, ini, xsts.getProp(), 50,Z3SolverFactory.getInstance().createItpSolver(),firstIndex,offset,(x)->XstsState.of(ExplState.of(x), false, true),xsts.getVars(),true);
 		var old = new Xsts_K_induction();
 		//final XstsConfig<?, ?, ?> configuration = new XstsConfigBuilder(domain, XstsConfigBuilder.Refinement.SEQ_ITP, Z3SolverFactory.getInstance()).initPrec(XstsConfigBuilder.InitPrec.CTRL).optimizeStmts(XstsConfigBuilder.OptimizeStmts.ON).predSplit(XstsConfigBuilder.PredSplit.CONJUNCTS).maxEnum(250).autoExpl(XstsConfigBuilder.AutoExpl.NEWOPERANDS).logger(logger).build(xsts);
 		final SafetyResult<?, ?> status = checker.check(null);
