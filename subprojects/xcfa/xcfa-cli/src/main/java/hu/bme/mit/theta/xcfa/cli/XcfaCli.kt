@@ -145,6 +145,9 @@ class XcfaCli(private val args: Array<String>) {
     @Parameter(names = ["--seed"], description = "Random seed used for DPOR")
     var randomSeed: Int = -1
 
+    @Parameter(names = ["--arg-to-file"], description = "Visualize the resulting file here: https://ftsrg-edu.github.io/student-sisak-argviz/")
+    var argToFile: Boolean = false
+
     @Parameter
     var remainingFlags: MutableList<String> = ArrayList()
 
@@ -172,8 +175,12 @@ class XcfaCli(private val args: Array<String>) {
         // propagating input variables
         LbePass.level = lbeLevel
         if (randomSeed >= 0) XcfaDporLts.random = Random(randomSeed)
+        if (argToFile) {
+            WebDebuggerLogger.enableWebDebuggerLogger()
+            WebDebuggerLogger.getInstance().setTitle(input?.name)
+        }
         LoopUnrollPass.UNROLL_LIMIT = loopUnroll
-        WebDebuggerLogger.getInstance().setTitle(input?.name)
+
 
         logger.write(Logger.Level.INFO, "Parsing the input $input as $inputType")
         val parseContext = ParseContext()
