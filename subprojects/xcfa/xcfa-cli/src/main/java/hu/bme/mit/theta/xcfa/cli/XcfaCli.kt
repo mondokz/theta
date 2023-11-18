@@ -45,6 +45,8 @@ import hu.bme.mit.theta.frontend.ParseContext
 import hu.bme.mit.theta.frontend.chc.ChcFrontend
 import hu.bme.mit.theta.llvm2xcfa.ArithmeticType
 import hu.bme.mit.theta.llvm2xcfa.XcfaUtils.fromFile
+import hu.bme.mit.theta.solver.SolverFactory
+import hu.bme.mit.theta.solver.SolverManager
 import hu.bme.mit.theta.solver.smtlib.SmtLibSolverManager
 import hu.bme.mit.theta.solver.z3.Z3SolverFactory
 import hu.bme.mit.theta.xcfa.analysis.ErrorDetection
@@ -155,6 +157,9 @@ class XcfaCli(private val args: Array<String>) {
     @Parameter(names = ["--cex-solver"], description = "Concretizer solver name")
     var concretizerSolver: String = "Z3"
 
+    @Parameter(names = ["--kindimc-solver"], description = "K-IND / IMC solver name")
+    var solver: String = "Z3"
+
     @Parameter(names = ["--validate-cex-solver"],
         description = "Activates a wrapper, which validates the assertions in the solver in each (SAT) check. Filters some solver issues.")
     var validateConcretizerSolver: Boolean = false
@@ -214,9 +219,11 @@ class XcfaCli(private val args: Array<String>) {
         }
         // verification
         stopwatch.reset().start()
+        registerAllSolverManagers(solverHome, logger)
+        val solverfactory = SolverManager.resolveSolverFactory(solver)
         if(algorithm == Algorithm.CEGAR) {
             logger.write(Logger.Level.INFO, "Starting verification of ${xcfa.name} using $backend")
-            registerAllSolverManagers(solverHome, logger)
+
             val config = parseConfigFromCli()
             if (strategy != Strategy.PORTFOLIO && printConfigFile != null) {
                 printConfigFile!!.writeText(gsonForOutput.toJson(config))
@@ -234,9 +241,9 @@ class XcfaCli(private val args: Array<String>) {
         } else {
             val transFunc = XcfaTransFunc.create(xcfa)
             val checker = if (algorithm == Algorithm.KINDUCTION) {
-                KIndChecker2(transFunc, Int.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), Z3SolverFactory.getInstance().createSolver(), ExplState::of, ExprUtils.getVars(transFunc.transExpr))
+                KIndChecker2(transFunc, Int.MAX_VALUE, solverfactory.createSolver(), solverfactory.createSolver(), ExplState::of, ExprUtils.getVars(transFunc.transExpr))
             } else {
-                ImcChecker<ExplState, StmtAction>(transFunc, Int.MAX_VALUE, Z3SolverFactory.getInstance().createItpSolver(), ExplState::of, ExprUtils.getVars(transFunc.transExpr), true)
+                ImcChecker<ExplState, StmtAction>(transFunc, Int.MAX_VALUE, solverfactory.createItpSolver(), ExplState::of, ExprUtils.getVars(transFunc.transExpr), true)
             }
             val result = checker.check(null)
             logger.write(Logger.Level.RESULT,result.toString() + "\n")

@@ -143,6 +143,8 @@ public class XstsCli {
 
     @Parameter(names = {"--refinement-solver"}, description = "Refinement solver name")
     String refinementSolver = "Z3";
+    @Parameter(names = {"--kindimc-solver"}, description = "K-IND / IMC solver name")
+    String kindimcSolver = "Z3";
 
     @Parameter(names = {"--abstraction-solver"}, description = "Abstraction solver name")
     String abstractionSolver = "Z3";
@@ -196,19 +198,21 @@ public class XstsCli {
             }
 
             final SafetyResult<?, ?> status;
+            registerAllSolverManagers(solverHome, logger);
+            SolverFactory kindimcFactory = SolverManager.resolveSolverFactory(kindimcSolver);
             if (algorithm.equals(Algorithm.CEGAR)) {
                 final XstsConfig<?, ?, ?> configuration = buildConfiguration(xsts);
                 status = check(configuration);
                 sw.stop();
             } else if (algorithm.equals(Algorithm.KINDUCTION)) {
                 var transFunc = XstsToMonoliticTransFunc.create(xsts);
-                var checker = new KIndChecker<XstsState<ExplState>, XstsAction>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars());
+                var checker = new KIndChecker<XstsState<ExplState>, XstsAction>(transFunc, Integer.MAX_VALUE, kindimcFactory.createSolver(), (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars());
                 status = checker.check(null);
                 logger.write(Logger.Level.RESULT, "%s%n", status);
                 sw.stop();
             } else if (algorithm.equals(Algorithm.IMC)) {
                 var transFunc = XstsToMonoliticTransFunc.create(xsts);
-                var checker = new ImcChecker<XstsState<ExplState>, XstsAction>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createItpSolver(), (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars(), true);
+                var checker = new ImcChecker<XstsState<ExplState>, XstsAction>(transFunc, Integer.MAX_VALUE, kindimcFactory.createItpSolver(), (x) -> XstsState.of(ExplState.of(x), false, true), xsts.getVars(), true);
                 status = checker.check(null);
                 logger.write(Logger.Level.RESULT, "%s%n", status);
                 sw.stop();

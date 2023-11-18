@@ -45,6 +45,8 @@ import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.booltype.BoolExprs;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
+import hu.bme.mit.theta.solver.SolverFactory;
+import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.z3.*;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.StsUtils;
@@ -123,6 +125,9 @@ public class StsCli {
     @Parameter(names = "--version", description = "Display version", help = true)
     boolean versionInfo = false;
 
+    @Parameter(names = {"--kindimc-solver"}, description = "K-IND / IMC solver name")
+    String kindimcSolver = "Z3";
+
     private Logger logger;
 
     public StsCli(final String[] args) {
@@ -161,16 +166,17 @@ public class StsCli {
 			final STS sts = loadModel();
 
 			SafetyResult<?, ?> status = null;
+            SolverFactory kindimcFactory = SolverManager.resolveSolverFactory(kindimcSolver);
 			if (algorithm.equals(Algorithm.CEGAR)) {
 				final StsConfig<?, ?, ?> configuration = buildConfiguration(sts);
 				status = check(configuration);
             } else if (algorithm.equals(Algorithm.KINDUCTION)) {
                 var transFunc = StsToMonoliticTransFunc.create(sts);
-                var checker = new KIndChecker2<>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), Z3SolverFactory.getInstance().createSolver(), ExplState::of, sts.getVars());
+                var checker = new KIndChecker2<>(transFunc, Integer.MAX_VALUE, kindimcFactory.createSolver(), Z3SolverFactory.getInstance().createSolver(), ExplState::of, sts.getVars());
                 status = checker.check(null);
             } else if (algorithm.equals(Algorithm.IMC)) {
                 var transFunc = StsToMonoliticTransFunc.create(sts);
-                var checker = new ImcChecker<>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createItpSolver(), ExplState::of, sts.getVars(), true);
+                var checker = new ImcChecker<>(transFunc, Integer.MAX_VALUE, kindimcFactory.createItpSolver(), ExplState::of, sts.getVars(), true);
                 status = checker.check(null);
             }
 			sw.stop();

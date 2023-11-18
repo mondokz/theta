@@ -160,6 +160,9 @@ public class CfaCli {
     @Parameter(names = "--version", description = "Display version", help = true)
     boolean versionInfo = false;
 
+    @Parameter(names = {"--kindimc-solver"}, description = "K-IND / IMC solver name")
+    String kindimcSolver = "Z3";
+
     private Logger logger;
 
     public CfaCli(final String[] args) {
@@ -245,19 +248,20 @@ public class CfaCli {
             }
 
 			final SafetyResult<?, ?> status;
+            SolverFactory kindimcFactory = SolverManager.resolveSolverFactory(kindimcSolver);
             if (algorithm == Algorithm.CEGAR) {
                 final CfaConfig<?, ?, ?> configuration = buildConfiguration(cfa, errLoc, abstractionSolverFactory, refinementSolverFactory);
                 status = check(configuration);
                 sw.stop();
             } else if (algorithm == Algorithm.KINDUCTION) {
                 var transFunc = CfaToMonoliticTransFunc.create(cfa);
-                var checker = new KIndChecker2<>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createSolver(), Z3SolverFactory.getInstance().createSolver(), ExplState::of, cfa.getVars());
+                var checker = new KIndChecker2<>(transFunc, Integer.MAX_VALUE, kindimcFactory.createSolver(), Z3SolverFactory.getInstance().createSolver(), ExplState::of, cfa.getVars());
                 status = checker.check(null);
                 logger.write(Logger.Level.RESULT, "%s%n", status);
                 sw.stop();
             } else if (algorithm == Algorithm.IMC) {
                 var transFunc = CfaToMonoliticTransFunc.create(cfa);
-                var checker = new ImcChecker<>(transFunc, Integer.MAX_VALUE, Z3SolverFactory.getInstance().createItpSolver(), ExplState::of, cfa.getVars(), true);
+                var checker = new ImcChecker<>(transFunc, Integer.MAX_VALUE, kindimcFactory.createItpSolver(), ExplState::of, cfa.getVars(), true);
                 status = checker.check(null);
                 logger.write(Logger.Level.RESULT, "%s%n", status);
                 sw.stop();
