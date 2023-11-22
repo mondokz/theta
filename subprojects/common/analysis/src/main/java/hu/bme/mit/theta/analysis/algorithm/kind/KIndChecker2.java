@@ -124,15 +124,13 @@ public class KIndChecker2<S  extends ExprState, A extends ExprAction> implements
                 solver1.add(PathUtils.unfold(Not(prop),currIndex));
 
                 if (solver1.check().isSat()) {
-                    S initial = null;
-                    for (int j = 0; j < listOfIndexes.size(); j++) {
-                        var valuation = PathUtils.extractValuation(solver1.getModel(), listOfIndexes.get(j), vars);
-
+                    List<S> states = new ArrayList<>();
+                    for (VarIndexing index : listOfIndexes) {
+                        var valuation = PathUtils.extractValuation(solver1.getModel(), index, vars);
                         S st = valToState.apply(valuation);
-                        if(initial == null)
-                            initial = st;
+                        states.add(st);
                     }
-                    Trace<S, A> trace = Trace.of(List.of(initial), List.of());
+                    Trace<S, A> trace = Trace.of(states, List.of());
                     return SafetyResult.unsafe(trace,ARG.create(null));
                 }
                 solver1.pop();

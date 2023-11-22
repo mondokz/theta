@@ -88,15 +88,13 @@ public class ImcChecker<S  extends ExprState, A extends StmtAction> implements S
 
             var status = solver.check();
             if(status.isSat()){
-                S initial = null;
-                for (int j = 0; j < listOfIndexes.size(); j++) {
-                    var valuation = PathUtils.extractValuation(solver.getModel(), listOfIndexes.get(j), vars);
-
+                List<S> states = new ArrayList<>();
+                for (VarIndexing index : listOfIndexes) {
+                    var valuation = PathUtils.extractValuation(solver.getModel(), index, vars);
                     S st = valToState.apply(valuation);
-                    if(initial == null)
-                        initial = st;
+                    states.add(st);
                 }
-                Trace<S, A> trace = Trace.of(List.of(initial), List.of());
+                Trace<S, A> trace = Trace.of(states, List.of());
                 return SafetyResult.unsafe(trace,ARG.create(null));
             }
             // reached fixed point
