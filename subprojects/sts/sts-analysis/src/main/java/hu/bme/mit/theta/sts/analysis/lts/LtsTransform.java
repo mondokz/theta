@@ -33,7 +33,9 @@ public class LtsTransform {
         var init = And(sts.getInit(),Not(saved.getRef()));
         for (var varDecl : sts.getVars()) {
             VarDecl newVar = Decls.Var(varDecl.getName(), varDecl.getType());
+
             assignList.add(AssignStmt.of(newVar, (Expr<Type>) varDecl.getRef()));
+
             var exp = And(EqExpr.create2(newVar.getRef(),varDecl.getRef()),sts.getProp(),saved.getRef());
             prop = And(prop,exp);
 
