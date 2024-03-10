@@ -28,7 +28,7 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.And;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Not;
 
 public class LtsTransform {
-    public Tuple3<Expr<BoolType>, Expr<BoolType>, Expr<BoolType>> lts(STS sts) {
+    public static Tuple3<Expr<BoolType>, Expr<BoolType>, Expr<BoolType>> lts(STS sts) {
         List<VarDecl<?>> savedVarDecls = new ArrayList<>();
         ArrayList<Stmt> skip = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
         var assignList = new ArrayList<Stmt>();
