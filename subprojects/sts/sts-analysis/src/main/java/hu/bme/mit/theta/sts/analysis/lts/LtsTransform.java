@@ -9,6 +9,7 @@ import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.Type;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.AndExpr;
+import hu.bme.mit.theta.core.type.booltype.BoolExprs;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs;
 import hu.bme.mit.theta.core.utils.StmtUtils;
@@ -17,9 +18,12 @@ import hu.bme.mit.theta.sts.STS;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static hu.bme.mit.theta.core.type.abstracttype.AbstractExprs.Eq;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.And;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Not;
 
@@ -28,25 +32,28 @@ public class LtsTransform {
         List<VarDecl<?>> savedVarDecls = new ArrayList<>();
         ArrayList<Stmt> skip = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
         var assignList = new ArrayList<Stmt>();
-        Expr<BoolType> prop = AndExpr.of(null);
+        Expr<BoolType> prop = True();
+
         var saved = Decls.Var("saved",BoolType.getInstance());
+
         var init = And(sts.getInit(),Not(saved.getRef()));
         for (var varDecl : sts.getVars()) {
-            VarDecl newVar = Decls.Var(varDecl.getName(), varDecl.getType());
+            var newVar = Decls.Var(varDecl.getName(), varDecl.getType());
 
-            assignList.add(AssignStmt.of(newVar, (Expr<Type>) varDecl.getRef()));
+            assignList.add(AssignStmt.of((VarDecl<Type>)newVar, (Expr<Type>) varDecl.getRef()));
 
-            var exp = And(EqExpr.create2(newVar.getRef(),varDecl.getRef()),sts.getProp(),saved.getRef());
+            var exp = And(Eq(newVar.getRef(),varDecl.getRef()),sts.getProp(),saved.getRef());
             prop = And(prop,exp);
 
         }
+        assignList.add(AssignStmt.of(saved, True()));
         var seq = SequenceStmt.of(assignList);
         skip.add(seq);
         var nonDet = NonDetStmt.of(skip);
 
         var t = StmtUtils.toExpr(nonDet, VarIndexingFactory.indexing(0)).getExprs();
         t.add(sts.getTrans());
-        var tran = AndExpr.of(t);
+        var tran = And(t);
 
         return Tuple3.of(init, tran, prop);
     }
