@@ -8,6 +8,7 @@ import hu.bme.mit.theta.core.stmt.*;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.Type;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
+import hu.bme.mit.theta.core.type.arraytype.ArrayEqExpr;
 import hu.bme.mit.theta.core.type.booltype.AndExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolExprs;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
@@ -17,10 +18,7 @@ import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.sts.STS;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static hu.bme.mit.theta.core.type.abstracttype.AbstractExprs.Eq;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
@@ -51,8 +49,9 @@ public class LtsTransform {
         skip.add(seq);
         var nonDet = NonDetStmt.of(skip);
 
-        var t = StmtUtils.toExpr(nonDet, VarIndexingFactory.indexing(0)).getExprs();
-        t.add(sts.getTrans());
+        var saveOrSkip = StmtUtils.toExpr(nonDet, VarIndexingFactory.indexing(0)).getExprs();
+        var t = new ArrayList<>(Collections.singleton(sts.getTrans()));
+        t.addAll(saveOrSkip);
         var tran = And(t);
 
         return Tuple3.of(init, tran, prop);
