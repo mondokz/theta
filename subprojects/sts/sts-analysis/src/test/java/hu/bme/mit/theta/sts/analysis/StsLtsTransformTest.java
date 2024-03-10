@@ -80,19 +80,17 @@ public class StsLtsTransformTest {
     public void test() throws IOException {
         STS sts = null;
 
-            final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream("src/test/resources/counter.system"));
-            if (spec.getAllSts().size() != 1) {
-                throw new UnsupportedOperationException("STS contains multiple properties.");
-            }
-            sts = Utils.singleElementOf(spec.getAllSts());
+        final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream("src/test/resources/counter.system"));
+        if (spec.getAllSts().size() != 1) {
+            throw new UnsupportedOperationException("STS contains multiple properties.");
+        }
+        sts = Utils.singleElementOf(spec.getAllSts());
 
-
-        var result = LtsTransform.lts(sts);
+        var transformedSts = LtsTransform.lts(sts);
         var solver = Z3SolverFactory.getInstance().createSolver();
         var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
         var indSolver = Z3SolverFactory.getInstance().createSolver();
-
-        var monolithicExpr = new MonolithicExpr(result.get1(), result.get2(), result.get3(), VarIndexingFactory.indexing(0));
+        var monolithicExpr = new MonolithicExpr(transformedSts.get1(), transformedSts.get2(), transformedSts.get3(), VarIndexingFactory.indexing(0));
 
         var checker = new BoundedChecker(
                 monolithicExpr,
@@ -105,7 +103,8 @@ public class StsLtsTransformTest {
                 indSolver,
                 (valuation) -> ExplState.of((Valuation)valuation),
                 (v2,v1)->  new Stub(Collections.emptyList()),
-                new ConsoleLogger(Logger.Level.VERBOSE));
+                new ConsoleLogger(Logger.Level.VERBOSE)
+        );
 
 
         Assert.assertEquals(isSafe, checker.check().isSafe());

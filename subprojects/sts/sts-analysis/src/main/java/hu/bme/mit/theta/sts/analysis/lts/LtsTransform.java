@@ -27,7 +27,6 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Not;
 
 public class LtsTransform {
     public static Tuple3<Expr<BoolType>, Expr<BoolType>, Expr<BoolType>> lts(STS sts) {
-        List<VarDecl<?>> savedVarDecls = new ArrayList<>();
         ArrayList<Stmt> skip = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
         var assignList = new ArrayList<Stmt>();
         Expr<BoolType> prop = True();
@@ -48,8 +47,8 @@ public class LtsTransform {
         var seq = SequenceStmt.of(assignList);
         skip.add(seq);
         var nonDet = NonDetStmt.of(skip);
-
         var saveOrSkip = StmtUtils.toExpr(nonDet, VarIndexingFactory.indexing(0)).getExprs();
+
         var t = new ArrayList<>(Collections.singleton(sts.getTrans()));
         t.addAll(saveOrSkip);
         var tran = And(t);
