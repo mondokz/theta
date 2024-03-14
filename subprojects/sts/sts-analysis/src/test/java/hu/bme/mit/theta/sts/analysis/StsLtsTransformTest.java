@@ -40,7 +40,8 @@ import hu.bme.mit.theta.sts.analysis.lts.LtsTransform;
 import hu.bme.mit.theta.sts.dsl.StsDslManager;
 import hu.bme.mit.theta.sts.dsl.StsSpec;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.stringtemplate.v4.ST;
@@ -72,7 +73,15 @@ public class StsLtsTransformTest {
 
     @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}, {3}")
     public static Collection<Object[]> data() {
-        return List.of();
+        return Arrays.asList(new Object[][]{
+
+                {"src/test/resources/counter.system", PRED_CART, SEQ_ITP, true},
+                {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
+                {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, false},
+                {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
+                {"src/test/resources/counter_bad.system", PRED_CART, SEQ_ITP, false},
+
+        });
     }
 
     @Test
@@ -80,7 +89,7 @@ public class StsLtsTransformTest {
     public void test() throws IOException {
         STS sts = null;
 
-        final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream("src/test/resources/counter.system"));
+        final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream(filePath));
         if (spec.getAllSts().size() != 1) {
             throw new UnsupportedOperationException("STS contains multiple properties.");
         }
@@ -90,17 +99,18 @@ public class StsLtsTransformTest {
         var solver = Z3SolverFactory.getInstance().createSolver();
         var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
         var indSolver = Z3SolverFactory.getInstance().createSolver();
-        var monolithicExpr = new MonolithicExpr(transformedSts.get1(), transformedSts.get2(), transformedSts.get3(), VarIndexingFactory.indexing(0));
+        var monolithicExpr = new MonolithicExpr(transformedSts.get1(), transformedSts.get2(), transformedSts.get3(), VarIndexingFactory.indexing(1));
 
         var checker = new BoundedChecker(
                 monolithicExpr,
-                (x) ->(true),
+                (x) -> (false),
                 solver,
-                () ->(true),
-                () ->(true),
+                () -> (true),
+                () -> (true),
                 itpSolver,
-                (a) ->(true),
+                (a) -> (false),
                 indSolver,
+                (a) -> (true),
                 (valuation) -> ExplState.of((Valuation)valuation),
                 (v2,v1)->  new Stub(Collections.emptyList()),
                 new ConsoleLogger(Logger.Level.VERBOSE)
