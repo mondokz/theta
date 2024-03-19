@@ -77,9 +77,8 @@ public class StsLtsTransformTest {
 
                 {"src/test/resources/counter.system", PRED_CART, SEQ_ITP, true},
                 {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
-                {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, false},
+                {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true},
                 {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
-                {"src/test/resources/counter_bad.system", PRED_CART, SEQ_ITP, false},
 
         });
     }

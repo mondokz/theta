@@ -39,10 +39,12 @@ public class LtsTransform {
 
             assignList.add(AssignStmt.of((VarDecl<Type>)newVar, (Expr<Type>) varDecl.getRef()));
 
-            var exp = And(Eq(newVar.getRef(),varDecl.getRef()),sts.getProp(),saved.getRef());
+            var exp = Eq(newVar.getRef(),varDecl.getRef());
             prop = And(prop,exp);
 
         }
+        prop = Not(And(prop,sts.getProp(),saved.getRef()));
+
         assignList.add(AssignStmt.of(saved, True()));
         var seq = SequenceStmt.of(assignList);
         skip.add(seq);
