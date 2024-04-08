@@ -34,6 +34,7 @@ public class LtsTransform {
         var saved = Decls.Var("saved",BoolType.getInstance());
 
         var init = And(sts.getInit(),Not(saved.getRef()));
+
         for (var varDecl : sts.getVars()) {
             var newVar = Decls.Var(varDecl.getName(), varDecl.getType());
 
