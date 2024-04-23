@@ -1,5 +1,5 @@
 
-package hu.bme.mit.theta.sts.analysis.lts;
+package hu.bme.mit.theta.analysis.l2s;
 
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 

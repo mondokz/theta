@@ -27,7 +27,7 @@ public final class XstsLts<S extends ExprState> implements LTS<XstsState<S>, Xst
 
     private final NonDetStmt trans;
     private final NonDetStmt env;
-    private final NonDetStmt init;
+    final NonDetStmt init;
 
     private final XstsStmtOptimizer<S> stmtOptimizer;
 

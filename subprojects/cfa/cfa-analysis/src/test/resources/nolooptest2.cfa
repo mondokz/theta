@@ -1,0 +1,19 @@
+main process cfa {
+	var x : int
+
+	init loc L0
+    loc L1
+    loc L2
+    loc L3
+    loc L4
+    final loc END
+    error loc ERR
+
+	L0 -> L1 { x := 0 }
+    L1 -> L2 { x := x + 1 }
+    L2 -> L3 { x := x + 1 }
+    L3 -> L1 { x := x + 1 }
+    L1 -> L4 { assume x > 2}
+    L4 -> END { assume x = 1 }
+    L4 -> ERR { assume not (x = 1) }
+}
