@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 public final class XstsLts<S extends ExprState> implements LTS<XstsState<S>, XstsAction> {
 
-    private final NonDetStmt trans;
-    private final NonDetStmt env;
+    final NonDetStmt trans;
+    final NonDetStmt env;
     final NonDetStmt init;
 
     private final XstsStmtOptimizer<S> stmtOptimizer;
