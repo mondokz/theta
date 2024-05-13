@@ -1,5 +1,7 @@
 package hu.bme.mit.theta.xsts.analysis;
 
+import hu.bme.mit.theta.analysis.Action;
+import hu.bme.mit.theta.analysis.expr.StmtAction;
 import hu.bme.mit.theta.analysis.l2s.ExtendAction;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -27,7 +29,8 @@ public class XstsActionExtender implements ExtendAction {
 
     }
     @Override
-    public List<Stmt> extend(List<Stmt> stmts) {
+    public XstsAction extend(StmtAction action) {
+        var stmts = action.getStmts();
         ArrayList<Stmt> skip = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
         var assignList = new ArrayList<Stmt>();
 
@@ -45,6 +48,6 @@ public class XstsActionExtender implements ExtendAction {
 
 
         stmts.add(nonDet);
-        return stmts;
+        return XstsAction.create(stmts);
     }
 }
