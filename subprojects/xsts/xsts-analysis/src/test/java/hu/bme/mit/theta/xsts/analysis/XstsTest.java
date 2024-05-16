@@ -16,14 +16,20 @@
 package hu.bme.mit.theta.xsts.analysis;
 
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.analysis.expl.ExplState;
+import hu.bme.mit.theta.analysis.l2s.LtsTransform;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.common.logging.Logger.Level;
+import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
 import hu.bme.mit.theta.xsts.XSTS;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfig;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfigBuilder;
 import hu.bme.mit.theta.xsts.dsl.XstsDslManager;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -34,6 +40,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -354,19 +361,29 @@ public class XstsTest {
                 new FileInputStream(propPath))) {
             xsts = XstsDslManager.createXsts(inputStream);
         }
+        var mono = XstsToMonoliticTransFunc.create(xsts);
+        var m = new MonolithicExpr(mono.getInitExpr(), mono.getTransExpr(), mono.getPropExpr(), mono.getOffsetIndexing());
+        var lts = new LtsTransform(m);
+        var monoltihicExpr = new MonolithicExpr(lts.getInitFunc(), lts.getTransFunc(), lts.getProp(),mono.getOffsetIndexing());
+        var indSolver = Z3SolverFactory.getInstance().createSolver();
+        var solver1 = Z3SolverFactory.getInstance().createSolver();
+        var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
+        var checker = new BoundedChecker(
+                monoltihicExpr,
+                (x) -> (false),
+                solver1,
+                () -> (true),
+                () -> (true),
+                itpSolver,
+                (a) -> (true),
+                indSolver,
+                (a) -> (true),
+                (valuation) -> ExplState.of((Valuation)valuation),
+                (v2,v1)->  new Stub(Collections.emptyList()),
+                new ConsoleLogger(Logger.Level.VERBOSE)
+        );
+        Assert.assertEquals(safe, checker.check().isSafe());
 
-        final XstsConfig<?, ?, ?> configuration = new XstsConfigBuilder(domain,
-                XstsConfigBuilder.Refinement.SEQ_ITP, Z3SolverFactory.getInstance(),
-                Z3SolverFactory.getInstance()).initPrec(XstsConfigBuilder.InitPrec.CTRL)
-                .optimizeStmts(XstsConfigBuilder.OptimizeStmts.ON)
-                .predSplit(XstsConfigBuilder.PredSplit.CONJUNCTS).maxEnum(250)
-                .autoExpl(XstsConfigBuilder.AutoExpl.NEWOPERANDS).logger(logger).build(xsts);
-        final SafetyResult<?, ?> status = configuration.check();
-        if (safe) {
-            assertTrue(status.isSafe());
-        } else {
-            assertTrue(status.isUnsafe());
-        }
     }
 
 }

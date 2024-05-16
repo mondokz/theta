@@ -29,9 +29,12 @@ public class LtsTransform {
     Collection<VarDecl<?>> vars;
     VarDecl<BoolType> saved;
 
+    VarDecl<BoolType> shouldSave;
+
     public LtsTransform(MonolithicExpr monolithicExpr){
         this.monolithicExpr = monolithicExpr;
         this.saved = Decls.Var("saved",BoolType.getInstance());
+        this.shouldSave = Decls.Var("shouldSave",BoolType.getInstance());
 
         final Set<VarDecl<?>> tmpVars = Containers.createSet();
         ExprUtils.collectVars(monolithicExpr.getInitExpr(), tmpVars);
@@ -49,18 +52,23 @@ public class LtsTransform {
         var assignList = new ArrayList<Stmt>();
 
         for (var varDecl : vars) {
-            var newVar = Decls.Var(varDecl.getName(), varDecl.getType());
+            var newVar = Decls.Var("_saved_"+varDecl.getName(), varDecl.getType());
             assignList.add(AssignStmt.of((VarDecl<Type>)newVar, (Expr<Type>) varDecl.getRef()));
         }
 
         assignList.add(AssignStmt.of(saved, True()));
-        var seq = SequenceStmt.of(assignList);
-        skip.add(seq);
+        var save = SequenceStmt.of(assignList);
+        skip.add(save);
 
         var nonDet = NonDetStmt.of(skip);
         var saveOrSkip = StmtUtils.toExpr(nonDet, VarIndexingFactory.indexing(0)).getExprs();
+        var havoc = HavocStmt.of(shouldSave);
+        var ifStmt = hu.bme.mit.theta.core.stmt.IfStmt.of(shouldSave.getRef(),save);
+        var list = List.of(havoc,ifStmt);
+        var sq = SequenceStmt.of(list);
+        var sqExpr = StmtUtils.toExpr(sq,VarIndexingFactory.indexing(0)).getExprs();
         var t = new ArrayList<>(Collections.singleton(monolithicExpr.getTransExpr()));
-        t.addAll(saveOrSkip);
+        t.addAll(sqExpr);
 
         return And(t);
     }
@@ -69,7 +77,7 @@ public class LtsTransform {
         Expr<BoolType> prop = True();
 
         for (var varDecl : vars) {
-            var newVar = Decls.Var(varDecl.getName(), varDecl.getType());
+            var newVar = Decls.Var("_saved_"+varDecl.getName(), varDecl.getType());
             var exp = Eq(newVar.getRef(),varDecl.getRef());
             prop = And(prop,exp);
         }

@@ -81,12 +81,12 @@ public class StsLtsTransformTest {
             throw new UnsupportedOperationException("STS contains multiple properties.");
         }
         sts = Utils.singleElementOf(spec.getAllSts());
-
-        var transformedSts = LtsTransform.lts(sts);
+        var mono = new MonolithicExpr(sts.getInit(), sts.getTrans(), sts.getProp(), VarIndexingFactory.indexing(1));
+        var transformedSts = new LtsTransform(new MonolithicExpr(sts.getInit(), sts.getTrans(), sts.getProp(), VarIndexingFactory.indexing(1)));
         var solver = Z3SolverFactory.getInstance().createSolver();
         var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
         var indSolver = Z3SolverFactory.getInstance().createSolver();
-        var monolithicExpr = new MonolithicExpr(transformedSts.get1(), transformedSts.get2(), transformedSts.get3(), VarIndexingFactory.indexing(1));
+        var monolithicExpr = new MonolithicExpr(transformedSts.getInitFunc(), transformedSts.getTransFunc(), transformedSts.getProp(), VarIndexingFactory.indexing(1));
 
         var checker = new BoundedChecker(
                 monolithicExpr,
@@ -95,7 +95,7 @@ public class StsLtsTransformTest {
                 () -> (true),
                 () -> (true),
                 itpSolver,
-                (a) -> (false),
+                (a) -> (true),
                 indSolver,
                 (a) -> (true),
                 (valuation) -> ExplState.of((Valuation)valuation),

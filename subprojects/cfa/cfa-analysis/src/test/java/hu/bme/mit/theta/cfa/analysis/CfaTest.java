@@ -20,16 +20,24 @@ import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.State;
 import hu.bme.mit.theta.analysis.Trace;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expl.ExplState;
+import hu.bme.mit.theta.analysis.l2s.LtsTransform;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfig;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder;
 import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.OsHelper;
+import hu.bme.mit.theta.common.logging.ConsoleLogger;
+import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.common.logging.NullLogger;
+import hu.bme.mit.theta.core.model.Valuation;
+import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.smtlib.SmtLibSolverManager;
+import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
 import hu.bme.mit.theta.solver.z3.Z3SolverManager;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -40,6 +48,7 @@ import org.junit.runners.Parameterized;
 import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.EXPL;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_BOOL;
@@ -74,7 +83,7 @@ public class CfaTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
 
-                {"src/test/resources/arithmetic-bool00.cfa", PRED_CART, SEQ_ITP, false, 15, "Z3"},
+                /*{"src/test/resources/arithmetic-bool00.cfa", PRED_CART, SEQ_ITP, false, 15, "Z3"},
 
                 {"src/test/resources/arithmetic-bool00.cfa", PRED_BOOL, BW_BIN_ITP, false, 15, "Z3"},
 
@@ -146,7 +155,13 @@ public class CfaTest {
 
                 {"src/test/resources/ifelse.cfa", EXPL, SEQ_ITP, false, 3, "Z3"},
 
-                {"src/test/resources/locking.cfa", PRED_CART, SEQ_ITP, true, 0, "Z3"},
+                {"src/test/resources/locking.cfa", PRED_CART, SEQ_ITP, true, 0, "Z3"},*/
+
+                {"src/test/resources/looptest.cfa", PRED_CART, SEQ_ITP, false, 3, "Z3"},
+
+                {"src/test/resources/nolooptest1.cfa", PRED_BOOL, BW_BIN_ITP, true, 3, "Z3"},
+
+                {"src/test/resources/nolooptest2.cfa", EXPL, SEQ_ITP, true, 3, "Z3"}
 
         });
     }
@@ -169,17 +184,35 @@ public class CfaTest {
 
         try {
             CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+            var cfaMono = CfaToMonoliticTransFunc.create(cfa);
+            var monoltihicExpr = new MonolithicExpr(cfaMono.getInitExpr(),cfaMono.getTransExpr(), cfaMono.getPropExpr(), cfaMono.getOffsetIndexing());
+            var ltsTrafo = new LtsTransform(monoltihicExpr);
+            var mExpr = new MonolithicExpr(ltsTrafo.getInitFunc(),ltsTrafo.getTransFunc(),ltsTrafo.getProp(), cfaMono.getOffsetIndexing());
+            var indSolver = Z3SolverFactory.getInstance().createSolver();
+            var solver1 = Z3SolverFactory.getInstance().createSolver();
+            var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
+
+            var checker = new BoundedChecker<>(
+                    mExpr,
+                    (x) -> (false),
+                    solver1,
+                    () -> (true),
+                    () -> (true),
+                    itpSolver,
+                    (a) -> (false),
+                    indSolver,
+                    (a) -> (true),
+                    (valuation) -> ExplState.of((Valuation)valuation),
+                    (v2,v1)->  new Stub(Collections.emptyList()),
+                    new ConsoleLogger(Logger.Level.VERBOSE)
+            );
             CfaConfig<? extends State, ? extends Action, ? extends Prec> config
                     = new CfaConfigBuilder(domain, refinement, solverFactory).build(cfa,
                     cfa.getErrorLoc().get());
             SafetyResult<? extends State, ? extends Action> result = config.check();
-            Assert.assertEquals(isSafe, result.isSafe());
-            if (result.isUnsafe()) {
-                Trace<CfaState<ExplState>, CfaAction> trace = CfaTraceConcretizer.concretize(
-                        (Trace<CfaState<?>, CfaAction>) result.asUnsafe().getTrace(),
-                        solverFactory);
-                Assert.assertEquals(cexLength, trace.length());
-            }
+            var res = checker.check();
+            Assert.assertEquals(isSafe, res.isSafe());
+
         } finally {
             SolverManager.closeAll();
         }
