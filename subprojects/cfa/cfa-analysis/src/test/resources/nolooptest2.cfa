@@ -10,10 +10,10 @@ main process cfa {
     error loc ERR
 
 	L0 -> L1 { x := 0 }
-    L1 -> L2 { x := x + 1 }
+    L1 -> L2 { x := x + 1 assume x < 15  }
     L2 -> L3 { x := x + 1 }
     L3 -> L1 { x := x + 1 }
-    L1 -> L4 { assume x > 2}
-    L4 -> END { assume x = 1 }
-    L4 -> ERR { assume not (x = 1) }
+    L1 -> L4 { assume x > 15 }
+    L1 -> END { assume x = 1 }
+    L1 -> ERR { assume not (x = 1) }
 }

@@ -187,7 +187,7 @@ public class CfaTest {
             var cfaMono = CfaToMonoliticTransFunc.create(cfa);
             var monoltihicExpr = new MonolithicExpr(cfaMono.getInitExpr(),cfaMono.getTransExpr(), cfaMono.getPropExpr(), cfaMono.getOffsetIndexing());
             var ltsTrafo = new LtsTransform(monoltihicExpr);
-            var mExpr = new MonolithicExpr(ltsTrafo.getInitFunc(),ltsTrafo.getTransFunc(),ltsTrafo.getProp(), cfaMono.getOffsetIndexing());
+            var mExpr = new MonolithicExpr(ltsTrafo.getInitFunc(),ltsTrafo.getTransFunc(),ltsTrafo.getProp(), ltsTrafo.getOffsetIndexing());
             var indSolver = Z3SolverFactory.getInstance().createSolver();
             var solver1 = Z3SolverFactory.getInstance().createSolver();
             var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
