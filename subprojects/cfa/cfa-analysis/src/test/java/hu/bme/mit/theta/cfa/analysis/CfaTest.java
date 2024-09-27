@@ -18,12 +18,11 @@ package hu.bme.mit.theta.cfa.analysis;
 import hu.bme.mit.theta.analysis.Action;
 import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.State;
-import hu.bme.mit.theta.analysis.Trace;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expl.ExplState;
-import hu.bme.mit.theta.analysis.l2s.LtsTransform;
+import hu.bme.mit.theta.analysis.l2s.L2STransform;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfig;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder;
@@ -33,7 +32,6 @@ import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.common.logging.NullLogger;
 import hu.bme.mit.theta.core.model.Valuation;
-import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.smtlib.SmtLibSolverManager;
@@ -54,9 +52,7 @@ import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.EXPL;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_BOOL;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_CART;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.BW_BIN_ITP;
-import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.NWT_IT_WP;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.SEQ_ITP;
-import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.UCB;
 
 @RunWith(value = Parameterized.class)
 public class CfaTest {
@@ -186,7 +182,7 @@ public class CfaTest {
             CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
             var cfaMono = CfaToMonoliticTransFunc.create(cfa);
             var monoltihicExpr = new MonolithicExpr(cfaMono.getInitExpr(),cfaMono.getTransExpr(), cfaMono.getPropExpr(), cfaMono.getOffsetIndexing());
-            var ltsTrafo = new LtsTransform(monoltihicExpr);
+            var ltsTrafo = new L2STransform(monoltihicExpr);
             var mExpr = new MonolithicExpr(ltsTrafo.getInitFunc(),ltsTrafo.getTransFunc(),ltsTrafo.getProp(), ltsTrafo.getOffsetIndexing());
             var indSolver = Z3SolverFactory.getInstance().createSolver();
             var solver1 = Z3SolverFactory.getInstance().createSolver();

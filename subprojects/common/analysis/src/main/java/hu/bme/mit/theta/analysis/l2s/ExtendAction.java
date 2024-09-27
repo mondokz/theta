@@ -9,5 +9,5 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ExtendAction {
-    StmtAction extend(StmtAction action);
+    StmtAction extend(StmtAction action, Stmt stmt);
 }

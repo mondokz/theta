@@ -8,7 +8,7 @@ import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
-import hu.bme.mit.theta.analysis.l2s.LtsTransform;
+import hu.bme.mit.theta.analysis.l2s.L2STransform;
 
 
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class StsL2S<P extends Prec> implements LTS<State, StsAction>, InitFunc<S
         return baseLts.getEnabledActionsFor(state).stream().map(
                 (StsAction baseAction) -> {
                     var baseExpr = baseAction.toExpr();
-                    LtsTransform transform = new LtsTransform(new MonolithicExpr(init,baseExpr,prop, VarIndexingFactory.indexing(1)));
+                    L2STransform transform = new L2STransform(new MonolithicExpr(init,baseExpr,prop, VarIndexingFactory.indexing(1)));
                     return new StsAction(transform.getTransFunc());
                 }
         ).collect(Collectors.toList());

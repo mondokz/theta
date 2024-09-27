@@ -6,16 +6,10 @@ import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.common.container.Containers;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
-import hu.bme.mit.theta.core.stmt.*;
 import hu.bme.mit.theta.core.type.Expr;
-import hu.bme.mit.theta.core.type.Type;
-import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprUtils;
-import hu.bme.mit.theta.core.utils.StmtUtils;
-import hu.bme.mit.theta.core.utils.indexings.BasicVarIndexing;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexing;
-import hu.bme.mit.theta.core.utils.indexings.VarIndexingBuilder;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 
 
@@ -26,7 +20,7 @@ import static hu.bme.mit.theta.core.type.abstracttype.AbstractExprs.Eq;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
 
-public class LtsTransform {
+public class L2STransform {
 
     MonolithicExpr monolithicExpr;
     Collection<VarDecl<?>> vars;
@@ -35,7 +29,7 @@ public class LtsTransform {
     VarDecl<BoolType> shouldSave;
     Map<VarDecl<?>, VarDecl<?>> saveMap = new HashMap<>();
 
-    public LtsTransform(MonolithicExpr monolithicExpr){
+    public L2STransform(MonolithicExpr monolithicExpr){
         this.monolithicExpr = monolithicExpr;
         this.saved = Decls.Var("saved",BoolType.getInstance());
         this.shouldSave = Decls.Var("shouldSave",BoolType.getInstance());

@@ -19,35 +19,15 @@ import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 
 public class XstsActionExtender implements ExtendAction {
 
-    VarDecl<BoolType> saved;
 
-    Collection<VarDecl<?>> vars;
+    XstsActionExtender(){
 
-    XstsActionExtender(Collection<VarDecl<?>> vars){
-        this.vars = vars;
-        this.saved = Decls.Var("saved",BoolType.getInstance());
 
     }
     @Override
-    public XstsAction extend(StmtAction action) {
-        var stmts = action.getStmts();
-        ArrayList<Stmt> skip = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
-        var assignList = new ArrayList<Stmt>();
-
-
-        for (var varDecl : vars) {
-            var newVar = Decls.Var(varDecl.getName(), varDecl.getType());
-            assignList.add(AssignStmt.of((VarDecl<Type>)newVar, (Expr<Type>) varDecl.getRef()));
-        }
-
-        assignList.add(AssignStmt.of(saved, True()));
-        var seq = SequenceStmt.of(assignList);
-        skip.add(seq);
-
-        var nonDet = NonDetStmt.of(skip);
-
-
-        stmts.add(nonDet);
+    public XstsAction extend(StmtAction action, Stmt stmt) {
+        var stmts = new ArrayList<>(action.getStmts());
+        stmts.add(stmt);
         return XstsAction.create(stmts);
     }
 }

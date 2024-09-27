@@ -26,7 +26,7 @@ import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
-import hu.bme.mit.theta.analysis.l2s.LtsTransform;
+import hu.bme.mit.theta.analysis.l2s.L2STransform;
 import hu.bme.mit.theta.sts.dsl.StsDslManager;
 import hu.bme.mit.theta.sts.dsl.StsSpec;
 import org.junit.Assert;
@@ -45,7 +45,7 @@ import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Domain.*;
 import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Refinement.SEQ_ITP;
 
 @RunWith(value = Parameterized.class)
-public class StsLtsTransformTest {
+public class StsL2STransformTest {
 
     @Parameterized.Parameter(value = 0)
     public String filePath;
@@ -82,7 +82,7 @@ public class StsLtsTransformTest {
         }
         sts = Utils.singleElementOf(spec.getAllSts());
         var mono = new MonolithicExpr(sts.getInit(), sts.getTrans(), sts.getProp(), VarIndexingFactory.indexing(1));
-        var transformedSts = new LtsTransform(new MonolithicExpr(sts.getInit(), sts.getTrans(), sts.getProp(), VarIndexingFactory.indexing(1)));
+        var transformedSts = new L2STransform(new MonolithicExpr(sts.getInit(), sts.getTrans(), sts.getProp(), VarIndexingFactory.indexing(1)));
         var solver = Z3SolverFactory.getInstance().createSolver();
         var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
         var indSolver = Z3SolverFactory.getInstance().createSolver();
