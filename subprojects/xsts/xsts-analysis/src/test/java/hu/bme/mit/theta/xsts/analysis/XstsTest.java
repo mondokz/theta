@@ -355,7 +355,7 @@ public class XstsTest {
 //                {"src/test/resources/model/if2.xsts", "src/test/resources/property/if2.prop", false,
 //                        XstsConfigBuilder.Domain.EXPL_PRED_COMBINED}
 
-                {"src/test/resources/model/l2stest1.xsts", "src/test/resources/property/l2stest1.prop", false,
+                {"src/test/resources/model/l2stest1.xsts", "src/test/resources/property/l2stest1.prop", true,
                         XstsConfigBuilder.Domain.PRED_CART},
 
                 {"src/test/resources/model/l2stest2.xsts", "src/test/resources/property/l2stest2.prop", false,
@@ -393,9 +393,9 @@ public class XstsTest {
                 () -> (true),
                 () -> (true),
                 itpSolver,
-                (a) -> (true),
+                (a) -> (false),
                 indSolver,
-                (a) -> (true),
+                (a) -> (false),
                 (valuation) -> ExplState.of((Valuation)valuation),
                 (v2,v1)->  new Stub(Collections.emptyList()),
                 new ConsoleLogger(Logger.Level.VERBOSE)
@@ -439,6 +439,20 @@ public class XstsTest {
         for (var act: actions){
             var succStates = transFunc.getSuccStates(state,act,fullPrec);
             logger.write(Level.INFO,succStates.toString());
+            for (var st1 : succStates){
+                var acts2 = xstsl2s.getEnabledActionsFor(st1);
+                for(var ac2 : acts2){
+                    var succstates2 = transFunc.getSuccStates(st1,ac2,fullPrec);
+                    logger.write(Level.INFO,succstates2.toString());
+                    for (var st2 : succstates2){
+                        var acts3 = xstsl2s.getEnabledActionsFor(st2);
+                        for(var ac3 : acts3){
+                            var succstates3 = transFunc.getSuccStates(st2,ac3,fullPrec);
+                            logger.write(Level.INFO,succstates2.toString());
+                        }
+                    }
+                }
+            }
         }
         assertTrue(true);
 

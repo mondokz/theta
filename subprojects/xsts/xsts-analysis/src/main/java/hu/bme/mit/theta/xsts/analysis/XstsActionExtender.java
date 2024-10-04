@@ -17,7 +17,7 @@ import java.util.List;
 
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 
-public class XstsActionExtender implements ExtendAction {
+public class XstsActionExtender implements ExtendAction<XstsAction> {
 
 
     XstsActionExtender(){
@@ -25,7 +25,7 @@ public class XstsActionExtender implements ExtendAction {
 
     }
     @Override
-    public XstsAction extend(StmtAction action, Stmt stmt) {
+    public XstsAction extend(XstsAction action, Stmt stmt) {
         var stmts = new ArrayList<>(action.getStmts());
         stmts.add(stmt);
         return XstsAction.create(stmts);

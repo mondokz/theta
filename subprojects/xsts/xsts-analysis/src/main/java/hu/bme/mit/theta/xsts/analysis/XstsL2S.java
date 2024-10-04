@@ -21,6 +21,7 @@ import hu.bme.mit.theta.core.utils.StmtUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 
 import static hu.bme.mit.theta.core.type.abstracttype.AbstractExprs.Eq;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Bool;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.And;
 
@@ -65,11 +66,18 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
             Function<Expr<BoolType>, ? extends InitFunc<XstsState<S>,P>> initFuncSupplier,
             Expr<BoolType> initExpr, Collection<VarDecl<?>> vars
     ) {
+        var lastWasEnv = Decls.Var("_lastWasEnv",Bool());
+        var initialized = Decls.Var("__initialized", Bool());
+        var tempList = new ArrayList<>(vars);
+        tempList.add(lastWasEnv);
+        tempList.add(initialized);
+
         this.varMap = new HashMap<>();
-        for (var varDecl : vars) {
+        for (var varDecl : tempList) {
             var newVar = Decls.Var(varDecl.getName()+"__saved", varDecl.getType());
             varMap.put(varDecl, newVar);
         }
+
 
         this.initFuncSupplier = initFuncSupplier;
         Expr<BoolType> x = True();
@@ -77,7 +85,7 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
             var exp = Eq(varDecl.getRef(),varMap.get(varDecl).getRef());
             x = And(x,exp);
         }
-        var newInitExpr = And(x,And(initExpr,Not(saved.getRef()))); //todo: and(this, összes mentett var: kezedeti value = eredeti value)
+        var newInitExpr = And(x,And(initExpr,Not(saved.getRef()),lastWasEnv.getRef(),Not(initialized.getRef()))); //todo: and(this, összes mentett var: kezedeti value = eredeti value)
         this.initFunc = initFuncSupplier.apply(newInitExpr);
         checkNotNull(baseLts);
         this.baseLts = baseLts;
@@ -113,6 +121,7 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
         assignList.add(AssignStmt.of(saved, True()));
         var seq = SequenceStmt.of(assignList);
         result.add(seq);
+
 
         return NonDetStmt.of(result);
     }

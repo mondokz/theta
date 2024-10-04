@@ -8,6 +8,6 @@ import hu.bme.mit.theta.core.stmt.Stmt;
 import java.util.Collection;
 import java.util.List;
 
-public interface ExtendAction {
-    StmtAction extend(StmtAction action, Stmt stmt);
+public interface ExtendAction<A extends StmtAction> {
+    A extend(A action, Stmt stmt);
 }
