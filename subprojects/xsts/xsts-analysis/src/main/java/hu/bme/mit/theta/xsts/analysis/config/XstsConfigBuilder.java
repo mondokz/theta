@@ -29,14 +29,7 @@ import hu.bme.mit.theta.analysis.algorithm.cegar.BasicAbstractor;
 import hu.bme.mit.theta.analysis.algorithm.cegar.CegarChecker;
 import hu.bme.mit.theta.analysis.algorithm.cegar.Refiner;
 import hu.bme.mit.theta.analysis.algorithm.cegar.abstractor.StopCriterions;
-import hu.bme.mit.theta.analysis.expl.ExplAnalysis;
-import hu.bme.mit.theta.analysis.expl.ExplPrec;
-import hu.bme.mit.theta.analysis.expl.ExplState;
-import hu.bme.mit.theta.analysis.expl.ExplStatePredicate;
-import hu.bme.mit.theta.analysis.expl.ExplStmtAnalysis;
-import hu.bme.mit.theta.analysis.expl.ExplStmtOptimizer;
-import hu.bme.mit.theta.analysis.expl.ItpRefToExplPrec;
-import hu.bme.mit.theta.analysis.expl.VarsRefToExplPrec;
+import hu.bme.mit.theta.analysis.expl.*;
 import hu.bme.mit.theta.analysis.expr.ExprStatePredicate;
 import hu.bme.mit.theta.analysis.expr.refinement.ExprTraceBwBinItpChecker;
 import hu.bme.mit.theta.analysis.expr.refinement.ExprTraceChecker;
@@ -70,12 +63,7 @@ import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.xsts.XSTS;
-import hu.bme.mit.theta.xsts.analysis.XstsAction;
-import hu.bme.mit.theta.xsts.analysis.XstsAnalysis;
-import hu.bme.mit.theta.xsts.analysis.XstsLts;
-import hu.bme.mit.theta.xsts.analysis.XstsState;
-import hu.bme.mit.theta.xsts.analysis.XstsStatePredicate;
-import hu.bme.mit.theta.xsts.analysis.XstsStmtOptimizer;
+import hu.bme.mit.theta.xsts.analysis.*;
 import hu.bme.mit.theta.xsts.analysis.autoexpl.XstsAutoExpl;
 import hu.bme.mit.theta.xsts.analysis.autoexpl.XstsNewAtomsAutoExpl;
 import hu.bme.mit.theta.xsts.analysis.autoexpl.XstsNewOperandsAutoExpl;
@@ -235,13 +223,18 @@ public class XstsConfigBuilder {
         final Expr<BoolType> negProp = Not(xsts.getProp());
 
         if (domain == Domain.EXPL) {
-            final LTS<XstsState<ExplState>, XstsAction> lts;
+            final LTS<XstsState<ExplState>, XstsAction> lts1;
             if (optimizeStmts == OptimizeStmts.ON) {
-                lts = XstsLts.create(xsts,
+                lts1 = XstsLts.create(xsts,
                         XstsStmtOptimizer.create(ExplStmtOptimizer.getInstance()));
             } else {
-                lts = XstsLts.create(xsts, XstsStmtOptimizer.create(DefaultStmtOptimizer.create()));
+                lts1 = XstsLts.create(xsts, XstsStmtOptimizer.create(DefaultStmtOptimizer.create()));
             }
+            var lts = XstsL2S.create(lts1,
+                    xsts.getProp(),
+                    (expr) -> XstsInitFunc.create(ExplInitFunc.create(abstractionSolver, expr)),
+                    xsts.getInitFormula(),
+                    xsts.getVars());
 
             final Predicate<XstsState<ExplState>> target = new XstsStatePredicate<ExplStatePredicate, ExplState>(
                     new ExplStatePredicate(negProp, abstractionSolver));
@@ -298,6 +291,7 @@ public class XstsConfigBuilder {
             final SafetyChecker<XstsState<ExplState>, XstsAction, ExplPrec> checker = CegarChecker.create(
                     abstractor, refiner,
                     logger);
+            checker.check(); //"all vars"
             final ExplPrec prec = initPrec.builder.createExpl(xsts);
             return XstsConfig.create(checker, prec);
 

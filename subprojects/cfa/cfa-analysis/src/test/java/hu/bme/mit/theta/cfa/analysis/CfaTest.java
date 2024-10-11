@@ -16,16 +16,22 @@
 package hu.bme.mit.theta.cfa.analysis;
 
 import hu.bme.mit.theta.analysis.Action;
+import hu.bme.mit.theta.analysis.Analysis;
 import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.State;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.analysis.expl.ExplPrec;
 import hu.bme.mit.theta.analysis.expl.ExplState;
+import hu.bme.mit.theta.analysis.expl.ExplStmtAnalysis;
 import hu.bme.mit.theta.analysis.l2s.L2STransform;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfig;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder;
+import hu.bme.mit.theta.cfa.analysis.lts.CfaLbeLts;
+import hu.bme.mit.theta.cfa.analysis.lts.CfaLts;
+import hu.bme.mit.theta.cfa.analysis.lts.CfaSbeLts;
 import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.OsHelper;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
@@ -53,6 +59,7 @@ import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_CART;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.BW_BIN_ITP;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.SEQ_ITP;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
 
 @RunWith(value = Parameterized.class)
 public class CfaTest {
@@ -208,6 +215,35 @@ public class CfaTest {
             SafetyResult<? extends State, ? extends Action> result = config.check();
             var res = checker.check();
             Assert.assertEquals(isSafe, res.isSafe());
+
+        } finally {
+            SolverManager.closeAll();
+        }
+    }
+
+    @Test
+    public void testL2S() throws Exception {
+        SolverManager.registerSolverManager(Z3SolverManager.create());
+        if (OsHelper.getOs().equals(OsHelper.OperatingSystem.LINUX)) {
+            SolverManager.registerSolverManager(
+                    SmtLibSolverManager.create(SmtLibSolverManager.HOME, NullLogger.getInstance()));
+        }
+
+        final SolverFactory solverFactory;
+        try {
+            solverFactory = SolverManager.resolveSolverFactory(solver);
+        } catch (Exception e) {
+            Assume.assumeNoException(e);
+            return;
+        }
+
+        try {
+            CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+            var baselts = CfaSbeLts.getInstance();
+            final Analysis<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> analysis = CfaAnalysis
+                    .create(cfa.getInitLoc(),
+                            ExplStmtAnalysis.create(solverFactory.createSolver(), True(),
+                                    0));
 
         } finally {
             SolverManager.closeAll();

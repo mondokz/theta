@@ -33,6 +33,10 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Not;
 
 public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsState<S>, XstsAction>, InitFunc<State, P> {
 
+    private final Expr<BoolType> newInitExpr;
+    private final VarDecl<BoolType> lastWasEnv;
+    private final VarDecl<BoolType> initialized;
+
     public static void main(String[] args) {
         var l2s = new XstsL2S<>(
                 null,
@@ -66,8 +70,8 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
             Function<Expr<BoolType>, ? extends InitFunc<XstsState<S>,P>> initFuncSupplier,
             Expr<BoolType> initExpr, Collection<VarDecl<?>> vars
     ) {
-        var lastWasEnv = Decls.Var("_lastWasEnv",Bool());
-        var initialized = Decls.Var("__initialized", Bool());
+        this.lastWasEnv = Decls.Var("_lastWasEnv",Bool());
+        this.initialized = Decls.Var("__initialized", Bool());
         var tempList = new ArrayList<>(vars);
         tempList.add(lastWasEnv);
         tempList.add(initialized);
@@ -85,7 +89,7 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
             var exp = Eq(varDecl.getRef(),varMap.get(varDecl).getRef());
             x = And(x,exp);
         }
-        var newInitExpr = And(x,And(initExpr,Not(saved.getRef()),lastWasEnv.getRef(),Not(initialized.getRef()))); //todo: and(this, összes mentett var: kezedeti value = eredeti value)
+        this.newInitExpr = And(x,And(initExpr,Not(saved.getRef()),lastWasEnv.getRef(),Not(initialized.getRef()))); //todo: and(this, összes mentett var: kezedeti value = eredeti value)
         this.initFunc = initFuncSupplier.apply(newInitExpr);
         checkNotNull(baseLts);
         this.baseLts = baseLts;
@@ -94,6 +98,10 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
         this.xtendr = new XstsActionExtender();
         this.stmts = getStmts();
 
+    }
+
+    public Expr<BoolType>getInitExpr(){
+        return this.newInitExpr;
     }
 
     public Collection<VarDecl<?>> getVars() {
@@ -111,19 +119,22 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
     public Stmt getStmts(){
 
         ArrayList<Stmt> result = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
-        var assignList = new ArrayList<Stmt>();
-
+        var saveList = new ArrayList<Stmt>();
 
         for (var varDecl : varMap.keySet()) {
-            assignList.add(AssignStmt.of((VarDecl<Type>) varMap.get(varDecl), (Expr<Type>) varDecl.getRef()));
+            saveList.add(AssignStmt.of((VarDecl<Type>) varMap.get(varDecl), (Expr<Type>) varDecl.getRef()));
         }
 
-        assignList.add(AssignStmt.of(saved, True()));
-        var seq = SequenceStmt.of(assignList);
+
+        saveList.add(AssignStmt.of(saved, True()));
+        var seq = SequenceStmt.of(saveList);
         result.add(seq);
 
+        var lastWasEnvStmt = AssignStmt.of(lastWasEnv, Not(lastWasEnv.getRef()));
+        var initializedStmt = AssignStmt.of(initialized, True());
 
-        return NonDetStmt.of(result);
+
+        return SequenceStmt.of(List.of(NonDetStmt.of(result), lastWasEnvStmt, initializedStmt));
     }
 
     @Override

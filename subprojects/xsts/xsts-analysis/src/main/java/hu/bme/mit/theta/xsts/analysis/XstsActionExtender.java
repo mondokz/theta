@@ -27,7 +27,7 @@ public class XstsActionExtender implements ExtendAction<XstsAction> {
     @Override
     public XstsAction extend(XstsAction action, Stmt stmt) {
         var stmts = new ArrayList<>(action.getStmts());
-        stmts.add(stmt);
+        stmts.add(0,stmt);
         return XstsAction.create(stmts);
     }
 }

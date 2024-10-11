@@ -18,10 +18,12 @@ package hu.bme.mit.theta.xsts.analysis;
 import hu.bme.mit.theta.analysis.Analysis;
 import hu.bme.mit.theta.analysis.InitFunc;
 import hu.bme.mit.theta.analysis.algorithm.ArgBuilder;
+import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expl.*;
 import hu.bme.mit.theta.analysis.l2s.L2STransform;
+import hu.bme.mit.theta.analysis.runtimemonitor.container.CexHashStorage;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.common.logging.Logger.Level;
@@ -29,11 +31,18 @@ import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.Solver;
+import hu.bme.mit.theta.solver.SolverFactory;
+import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.z3.Z3SolverFactory;
+import hu.bme.mit.theta.solver.z3.Z3SolverManager;
 import hu.bme.mit.theta.xsts.XSTS;
+import hu.bme.mit.theta.xsts.analysis.config.XstsConfig;
 import hu.bme.mit.theta.xsts.analysis.config.XstsConfigBuilder;
+
 import hu.bme.mit.theta.xsts.dsl.XstsDslManager;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +63,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(value = Parameterized.class)
 public class XstsTest {
 
+    private static final String SOLVER_STRING = "Z3";
     @Parameterized.Parameter(value = 0)
     public String filePath;
 
@@ -370,7 +381,7 @@ public class XstsTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void testL2Smonolithic() throws IOException {
 
         final Logger logger = new ConsoleLogger(Level.SUBSTEP);
 
@@ -382,7 +393,7 @@ public class XstsTest {
         var mono = XstsToMonoliticTransFunc.create(xsts);
         var m = new MonolithicExpr(mono.getInitExpr(), mono.getTransExpr(), mono.getPropExpr(), mono.getOffsetIndexing());
         var lts = new L2STransform(m);
-        var monoltihicExpr = new MonolithicExpr(lts.getInitFunc(), lts.getTransFunc(), lts.getProp(),mono.getOffsetIndexing());
+        var monoltihicExpr = new MonolithicExpr(lts.getInitFunc(), lts.getTransFunc(), lts.getProp(),lts.getOffsetIndexing());
         var indSolver = Z3SolverFactory.getInstance().createSolver();
         var solver1 = Z3SolverFactory.getInstance().createSolver();
         var itpSolver = Z3SolverFactory.getInstance().createItpSolver();
@@ -393,9 +404,9 @@ public class XstsTest {
                 () -> (true),
                 () -> (true),
                 itpSolver,
-                (a) -> (false),
+                (a) -> (true),
                 indSolver,
-                (a) -> (false),
+                (a) -> (true),
                 (valuation) -> ExplState.of((Valuation)valuation),
                 (v2,v1)->  new Stub(Collections.emptyList()),
                 new ConsoleLogger(Logger.Level.VERBOSE)
@@ -404,8 +415,7 @@ public class XstsTest {
 
     }
 
-    @Test
-    public void test2() throws IOException {
+    public void testXstsL2s() throws IOException {
 
         final Logger logger = new ConsoleLogger(Level.SUBSTEP);
 
@@ -455,6 +465,46 @@ public class XstsTest {
             }
         }
         assertTrue(true);
+
+    }
+
+    @Test
+    public void testCegar() throws Exception {
+
+        final Logger logger = new ConsoleLogger(Level.SUBSTEP);
+
+        final SolverFactory solverFactory;
+        var solverManager = Z3SolverManager.create();
+        try {
+            solverFactory = solverManager.getSolverFactory("Z3");
+        } catch (Exception e) {
+            Assume.assumeNoException(e);
+            return;
+        }
+
+        XSTS xsts;
+        try (InputStream inputStream = new SequenceInputStream(new FileInputStream(filePath),
+                new FileInputStream(propPath))) {
+            xsts = XstsDslManager.createXsts(inputStream);
+        }
+
+        try {
+            final XstsConfig<?, ?, ?> configuration = new XstsConfigBuilder(domain,
+                    XstsConfigBuilder.Refinement.SEQ_ITP, solverFactory,
+                    solverFactory).initPrec(XstsConfigBuilder.InitPrec.CTRL)
+                    .optimizeStmts(XstsConfigBuilder.OptimizeStmts.ON)
+                    .predSplit(XstsConfigBuilder.PredSplit.CONJUNCTS).maxEnum(250)
+                    .autoExpl(XstsConfigBuilder.AutoExpl.NEWOPERANDS).logger(logger).build(xsts);
+            final SafetyResult<?, ?> status = configuration.check();
+
+            if (safe) {
+                assertTrue(status.isSafe());
+            } else {
+                assertTrue(status.isUnsafe());
+            }
+        } finally {
+            SolverManager.closeAll();
+        }
 
     }
 
