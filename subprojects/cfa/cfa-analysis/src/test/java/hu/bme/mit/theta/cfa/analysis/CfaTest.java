@@ -15,13 +15,11 @@
  */
 package hu.bme.mit.theta.cfa.analysis;
 
-import hu.bme.mit.theta.analysis.Action;
-import hu.bme.mit.theta.analysis.Analysis;
-import hu.bme.mit.theta.analysis.Prec;
-import hu.bme.mit.theta.analysis.State;
+import hu.bme.mit.theta.analysis.*;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.analysis.expl.ExplInitFunc;
 import hu.bme.mit.theta.analysis.expl.ExplPrec;
 import hu.bme.mit.theta.analysis.expl.ExplState;
 import hu.bme.mit.theta.analysis.expl.ExplStmtAnalysis;
@@ -29,9 +27,8 @@ import hu.bme.mit.theta.analysis.l2s.L2STransform;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfig;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder;
-import hu.bme.mit.theta.cfa.analysis.lts.CfaLbeLts;
-import hu.bme.mit.theta.cfa.analysis.lts.CfaLts;
 import hu.bme.mit.theta.cfa.analysis.lts.CfaSbeLts;
+import hu.bme.mit.theta.cfa.analysis.prec.GlobalCfaPrec;
 import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.OsHelper;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
@@ -228,22 +225,48 @@ public class CfaTest {
             SolverManager.registerSolverManager(
                     SmtLibSolverManager.create(SmtLibSolverManager.HOME, NullLogger.getInstance()));
         }
-
-        final SolverFactory solverFactory;
-        try {
-            solverFactory = SolverManager.resolveSolverFactory(solver);
-        } catch (Exception e) {
-            Assume.assumeNoException(e);
-            return;
-        }
-
         try {
             CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
-            var baselts = CfaSbeLts.getInstance();
+            var solver1 = Z3SolverFactory.getInstance().createSolver();
+            LTS<CfaState<?>,CfaAction> baselts = CfaSbeLts.getInstance();
             final Analysis<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> analysis = CfaAnalysis
                     .create(cfa.getInitLoc(),
-                            ExplStmtAnalysis.create(solverFactory.createSolver(), True(),
-                                    0));
+                            ExplStmtAnalysis.create(solver1, True(),
+                                    1));
+            CfaL2S<ExplState> cfal2s = CfaL2S.create(
+                    baselts,
+                    cfa,
+                    cfa.getVars()
+            );
+            final Logger logger = new ConsoleLogger(Logger.Level.SUBSTEP);
+            var fullPrec = GlobalCfaPrec.create(ExplPrec.of(cfal2s.getAllVars()));
+            var transFunc = analysis.getTransFunc();
+            var initFunc = CfaInitFunc.create(
+                    cfa.getInitLoc(), ExplInitFunc.create(solver1, cfal2s.getInitExpr())
+            );
+            var initStates = initFunc.getInitStates(fullPrec);
+            var state = initStates.stream().findFirst().get();
+            var actions = cfal2s.getEnabledActionsFor(state);
+            for (var act: actions) {
+                var succStates = transFunc.getSuccStates(state,act,fullPrec);
+                logger.write(Logger.Level.INFO,succStates.toString());
+                for (var st1 : succStates){
+                    var acts2 = cfal2s.getEnabledActionsFor(st1);
+                    for(var ac2 : acts2){
+                        var succstates2 = transFunc.getSuccStates(st1,ac2,fullPrec);
+                        logger.write(Logger.Level.INFO,succstates2.toString());
+                        for (var st2 : succstates2){
+                            var acts3 = cfal2s.getEnabledActionsFor(st2);
+                            for(var ac3 : acts3){
+                                var succstates3 = transFunc.getSuccStates(st2,ac3,fullPrec);
+                                logger.write(Logger.Level.INFO,succstates2.toString());
+                            }
+                        }
+                    }
+                }
+            }
+
+
 
         } finally {
             SolverManager.closeAll();

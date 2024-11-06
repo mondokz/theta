@@ -30,6 +30,7 @@ import hu.bme.mit.theta.common.Utils;
 import hu.bme.mit.theta.common.container.Containers;
 import hu.bme.mit.theta.core.decl.VarDecl;
 import hu.bme.mit.theta.core.stmt.Stmt;
+import hu.bme.mit.theta.core.stmt.Stmts;
 import hu.bme.mit.theta.core.utils.StmtUtils;
 
 /**
@@ -162,6 +163,14 @@ public final class CFA {
             this.source = checkNotNull(source);
             this.target = checkNotNull(target);
             this.stmt = checkNotNull(stmt);
+        }
+
+        /**
+         * Returns a new edge equivalent to this edge, pre-extended with the argument.
+         * The statement on this new edge is Seq(extensionStmt, this.stmt)
+         */
+        public Edge extendStmt(Stmt extensionStmt) {
+            return new Edge(this.source, this.target, Stmts.SequenceStmt(List.of(extensionStmt, this.stmt)));
         }
 
         public Loc getSource() {
