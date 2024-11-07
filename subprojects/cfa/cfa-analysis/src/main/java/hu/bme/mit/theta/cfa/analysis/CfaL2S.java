@@ -2,6 +2,7 @@ package hu.bme.mit.theta.cfa.analysis;
 
 import com.google.common.base.Preconditions;
 import hu.bme.mit.theta.analysis.LTS;
+import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.expr.ExprState;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.core.decl.Decls;
@@ -22,41 +23,38 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.And;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Not;
 import static hu.bme.mit.theta.core.type.inttype.IntExprs.Int;
 
-import hu.bme.mit.theta.core.stmt.Stmt;
+public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>,CfaAction> {
 
-import java.util.Collection;
-import java.util.Map;
-
-public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>, CfaAction>{
-
+    private final Expr<BoolType> prop;
+    private final Collection<VarDecl<?>> vars;
     private final VarDecl<IntType> locVar;
     private final Map<CFA.Loc, Integer> map;
     private final Expr<BoolType> initExpr;
-    private final CfaActionExtender xtendr = new CfaActionExtender();
-    private final CFA cfa;
-    static Map<VarDecl<?>, VarDecl<?>> varMap = new HashMap<>();
-    private final Stmt saveStmt;
-    Expr<BoolType> prop;
-    private final Collection<VarDecl<?>> vars;
-    LTS<CfaState<?>, CfaAction> baseLts;
-    static VarDecl<BoolType> saved = Decls.Var("saved",BoolType.getInstance());
+    private CfaActionExtender xtendr;
+    public Map<VarDecl<?>, VarDecl<?>> varMap;
+    public Stmt saveStmt;
+    CFA cfa;
+    LTS<? super CfaState<S>, CfaAction> baseLts;
+    VarDecl<BoolType> saved = Decls.Var("saved",BoolType.getInstance());
 
+    public CfaL2S(LTS<? super CfaState<S>, CfaAction> baseLts,
+                   CFA cfa,
+                   Collection<VarDecl<?>> vars) {
+        this.locVar = Decls.Var("loc", Int());
+        this.cfa = cfa;
 
-    public static CfaL2S create(final LTS<CfaState<?>, CfaAction> baseLts,
-                                final CFA cfa,
-                                final Collection<VarDecl<?>> vars)
-    {
-        final VarDecl<IntType> locVar = Decls.Var("loc", Int());
+        this.vars = vars;
+
 
         int i = 0;
-        final Map<CFA.Loc, Integer> map = new HashMap<>();
+        this.map = new HashMap<>();
         for (var x : cfa.getLocs()) {
             map.put(x, i++);
         }
 
         var tempList = new ArrayList<>(vars);
         tempList.add(locVar);
-        final Map<VarDecl<?>, VarDecl<?>> varMap = new HashMap<>();
+        this.varMap = new HashMap<>();
         for (var varDecl : tempList) {
             var newVar = Decls.Var(varDecl.getName()+"__saved", varDecl.getType());
             varMap.put(varDecl, newVar);
@@ -67,43 +65,45 @@ public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>, CfaAction>{
             var exp = Eq(varDecl.getRef(),varMap.get(varDecl).getRef());
             x = And(x,exp);
         }
-        final Expr<BoolType> initExpr = And(Eq(locVar.getRef(),IntExprs.Int(0)),Not(saved.getRef()));
-        final Stmt saveStmt = createStmts(varMap);
-        final Expr<BoolType> prop = extendProp(Eq(locVar.getRef(), Int(map.get(cfa.getErrorLoc().get()))));
-
-        return new CfaL2S<>(baseLts, vars, varMap, saveStmt, prop, locVar, map, initExpr, cfa);
-    }
-
-    private CfaL2S(final LTS<CfaState<?>, CfaAction> baseLts, final Collection<VarDecl<?>> vars,
-                   final Map<VarDecl<?>, VarDecl<?>> varMap, final Stmt saveStmt, final Expr<BoolType> prop,
-                   final VarDecl<IntType> locVar, final Map<CFA.Loc, Integer> map, final Expr<BoolType> initExpr, final CFA cfa) {
-        this.vars = vars;
-        this.prop = prop;
+        Expr<BoolType> initExpr = Eq(locVar.getRef(),IntExprs.Int(0));
+        this.initExpr = And(initExpr,Not(saved.getRef()));
+        this.xtendr = new CfaActionExtender();
         this.baseLts = baseLts;
-        this.varMap = varMap;
-        this.saveStmt = saveStmt;
-        this.locVar = locVar;
-        this.map = map;
-        this.initExpr = initExpr;
-        this.cfa = cfa;
+        this.saveStmt = getStmts();
+        this.prop = extendProp();
+
+
     }
+
+    public static <P extends Prec,S extends ExprState> CfaL2S<S> create(LTS<? super CfaState<S>, CfaAction> baseLts,
+                                                                        CFA cfa,
+                                                                        Collection<VarDecl<?>> vars)
+    {
+        return new CfaL2S<>(baseLts, cfa, vars);
+    }
+
     @Override
     public Collection<CfaAction> getEnabledActionsFor(CfaState<S> state) {
-        return baseLts.getEnabledActionsFor((CfaState<S>) state).stream().flatMap(
+        return baseLts.getEnabledActionsFor(state).stream().flatMap(
                 (CfaAction baseaction) -> {
                     Preconditions.checkArgument(baseaction.getEdges().size() == 1);
                     var edge = baseaction.getEdges().get(0);
                     var assignLoc = AssignStmt.of(locVar,IntExprs.Int(map.get(edge.getTarget())));
                     var saveAndAssignLoc = SequenceStmt.of(List.of(saveStmt,assignLoc));
+                    // Seq(NonDet(skip, save), assignLoc, stmt)
+                    // =NonDet(Seq(skip,assignLoc, stmt), Seq(save, assignLoc, stmt))
+                    // =[Seq(skip,assignLoc, stmt), Seq(save, assignLoc, stmt)]
+                    // =Seq(assignLoc, stmt), Seq(save, assignLoc, stmt)
+                    // =Seq(assignLoc, stmt), Seq(Seq(save, assignLoc), stmt)
                     return Stream.of(
-                            xtendr.extend(baseaction, assignLoc),
+                            xtendr.extend(baseaction, assignLoc), 
                             xtendr.extend(baseaction, saveAndAssignLoc)
                     );
                 }
         ).toList();
     }
 
-    private static Stmt createStmts(final Map<VarDecl<?>, VarDecl<?>> varMap){
+    public Stmt getStmts(){
 
         ArrayList<Stmt> result = new ArrayList<>(Collections.singleton(SkipStmt.getInstance()));
         var saveList = new ArrayList<Stmt>();
@@ -116,12 +116,13 @@ public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>, CfaAction>{
         var saveSequence = SequenceStmt.of(saveList);
         result.add(saveSequence);
 
+        //return NonDetStmt.of(result);
         return saveSequence;
     }
 
-    public static Expr<BoolType> extendProp(Expr<BoolType> prop){
-        Expr<BoolType> p = prop;
-
+    public Expr<BoolType> extendProp(){
+        Expr<BoolType> p = True();
+        var prop = Eq(locVar.getRef(), Int(map.get(cfa.getErrorLoc().get())));
 
         for (var varDecl : varMap.keySet()) {
             var exp = Eq(varMap.get(varDecl).getRef(),varDecl.getRef());
@@ -130,9 +131,11 @@ public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>, CfaAction>{
 
         return Not(And(p,prop,saved.getRef()));
     }
-
-    public Iterable<VarDecl<?>> getAllVars() {
-        return varMap.keySet();
+    public Collection<VarDecl<?>> getAllVars(){
+        var result = new ArrayList<>(varMap.keySet());
+        result.addAll(varMap.values());
+        result.add(saved);
+        return result;
     }
 
     public Expr<BoolType> getInitExpr() {

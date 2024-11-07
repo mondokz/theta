@@ -163,4 +163,7 @@ public class XstsL2S<P extends Prec,S extends ExprState> implements LTS<XstsStat
     }
 
 
+    public Expr<BoolType> getProp() {
+        return prop;
+    }
 }

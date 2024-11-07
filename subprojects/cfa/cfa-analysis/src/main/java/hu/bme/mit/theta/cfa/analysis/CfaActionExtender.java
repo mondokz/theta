@@ -14,8 +14,7 @@ public class CfaActionExtender implements ExtendAction<CfaAction> {
     public CfaAction extend(CfaAction action, Stmt stmt) {
         // TODO (optional) no phantom edge
         var edge = action.getEdges().stream().findFirst().orElseThrow();
-        var newStmt = SequenceStmt.of(List.of(stmt,edge.getStmt()));
-        var newEdge = CFA.builder().createEdge(edge.getSource(), edge.getTarget(),newStmt);
+        var newEdge = edge.extendStmt(stmt);
         return CfaAction.create(newEdge);
     }
 }
