@@ -10,8 +10,8 @@ main process cfa {
     error loc ERR
 
 	L0 -> L1 { x := 1 }
-    L1 -> L2 { x := 1 }
     L2 -> L1 { x := 1 }
     L1 -> END { assume x = 3 }
-    L1 -> ERR { assume not (x = 1) }
+    L1 -> ERR { assume true}
+    ERR -> L2 { assume true }
 }

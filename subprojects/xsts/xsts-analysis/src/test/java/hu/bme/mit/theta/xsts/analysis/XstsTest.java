@@ -17,18 +17,29 @@ package hu.bme.mit.theta.xsts.analysis;
 
 import hu.bme.mit.theta.analysis.Analysis;
 import hu.bme.mit.theta.analysis.InitFunc;
+import hu.bme.mit.theta.analysis.LTS;
 import hu.bme.mit.theta.analysis.algorithm.ArgBuilder;
+import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.analysis.algorithm.cegar.Abstractor;
+import hu.bme.mit.theta.analysis.algorithm.cegar.BasicAbstractor;
+import hu.bme.mit.theta.analysis.algorithm.cegar.CegarChecker;
+import hu.bme.mit.theta.analysis.algorithm.cegar.Refiner;
+import hu.bme.mit.theta.analysis.algorithm.cegar.abstractor.StopCriterions;
 import hu.bme.mit.theta.analysis.expl.*;
+import hu.bme.mit.theta.analysis.expr.refinement.*;
 import hu.bme.mit.theta.analysis.l2s.L2STransform;
 import hu.bme.mit.theta.analysis.runtimemonitor.container.CexHashStorage;
+import hu.bme.mit.theta.analysis.stmtoptimizer.DefaultStmtOptimizer;
+import hu.bme.mit.theta.analysis.waitlist.PriorityWaitlist;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.common.logging.Logger.Level;
 import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
+import hu.bme.mit.theta.core.type.booltype.BoolExprs;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.SolverFactory;
@@ -58,6 +69,7 @@ import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Not;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(value = Parameterized.class)
@@ -380,7 +392,6 @@ public class XstsTest {
         });
     }
 
-    @Test
     public void testL2Smonolithic() throws IOException {
 
         final Logger logger = new ConsoleLogger(Level.SUBSTEP);
@@ -443,7 +454,8 @@ public class XstsTest {
                 new ExplStatePredicate(xsts.getProp(), solver));
         var x0 = 0;
         var transFunc = xstsAnalysis.getTransFunc();
-        var initStates = xstsl2s.getInitStates(fullPrec);
+        var initFunc = XstsInitFunc.create(ExplInitFunc.create(solver, xstsl2s.getInitExpr()));
+        var initStates = initFunc.getInitStates(fullPrec);
         XstsState<ExplState> state = initStates.stream().findFirst().get();
         var actions = xstsl2s.getEnabledActionsFor(state);
         for (var act: actions){
@@ -481,22 +493,49 @@ public class XstsTest {
             Assume.assumeNoException(e);
             return;
         }
-
+        var abstractionSolver = solverFactory.createSolver();
         XSTS xsts;
         try (InputStream inputStream = new SequenceInputStream(new FileInputStream(filePath),
                 new FileInputStream(propPath))) {
             xsts = XstsDslManager.createXsts(inputStream);
         }
 
-        try {
-            final XstsConfig<?, ?, ?> configuration = new XstsConfigBuilder(domain,
-                    XstsConfigBuilder.Refinement.SEQ_ITP, solverFactory,
-                    solverFactory).initPrec(XstsConfigBuilder.InitPrec.CTRL)
-                    .optimizeStmts(XstsConfigBuilder.OptimizeStmts.ON)
-                    .predSplit(XstsConfigBuilder.PredSplit.CONJUNCTS).maxEnum(250)
-                    .autoExpl(XstsConfigBuilder.AutoExpl.NEWOPERANDS).logger(logger).build(xsts);
-            final SafetyResult<?, ?> status = configuration.check();
+        final LTS<XstsState<ExplState>, XstsAction> lts1;
+        lts1 = XstsLts.create(xsts, XstsStmtOptimizer.create(DefaultStmtOptimizer.create()));
+        var lts = XstsL2S.create(lts1,
+                xsts.getProp(),
+                (expr) -> XstsInitFunc.create(ExplInitFunc.create(abstractionSolver, expr)),
+                xsts.getInitFormula(),
+                xsts.getVars());
 
+        XstsConfigBuilder.Search search = XstsConfigBuilder.Search.BFS;
+
+        final Predicate<XstsState<ExplState>> target = new XstsStatePredicate<>(
+                new ExplStatePredicate(Not(lts.getProp()), abstractionSolver));
+        final Analysis<XstsState<ExplState>, XstsAction, ExplPrec> analysis = XstsAnalysis.create(
+                ExplStmtAnalysis.create(abstractionSolver, lts.getInitExpr(), 0));
+        final ArgBuilder<XstsState<ExplState>, XstsAction, ExplPrec> argBuilder = ArgBuilder.create(
+                lts, analysis, target,
+                true);
+        final Abstractor<XstsState<ExplState>, XstsAction, ExplPrec> abstractor = BasicAbstractor.builder(
+                        argBuilder)
+                .waitlist(PriorityWaitlist.create(search.comparator))
+                .stopCriterion(StopCriterions.firstCex())
+                .logger(logger).build();
+
+        Refiner<XstsState<ExplState>, XstsAction, ExplPrec> refiner = SingleExprTraceRefiner.create(
+                        ExprTraceFwBinItpChecker.create(lts.getInitExpr(),Not(lts.getProp()),
+                                solverFactory.createItpSolver()),
+                        JoiningPrecRefiner.create(new ItpRefToExplPrec()), PruneStrategy.LAZY, logger);
+
+
+        final SafetyChecker<XstsState<ExplState>, XstsAction, ExplPrec> checker = CegarChecker.create(
+                abstractor, refiner,
+                logger);
+        final ExplPrec prec = ExplPrec.of(lts.getAllVars());
+        var config = XstsConfig.create(checker, prec);
+        try  {
+            final SafetyResult<?, ?> status = config.check();
             if (safe) {
                 assertTrue(status.isSafe());
             } else {

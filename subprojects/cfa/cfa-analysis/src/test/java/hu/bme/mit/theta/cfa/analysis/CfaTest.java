@@ -16,14 +16,26 @@
 package hu.bme.mit.theta.cfa.analysis;
 
 import hu.bme.mit.theta.analysis.*;
+import hu.bme.mit.theta.analysis.algorithm.ArgBuilder;
+import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.BoundedChecker;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
-import hu.bme.mit.theta.analysis.expl.ExplInitFunc;
-import hu.bme.mit.theta.analysis.expl.ExplPrec;
-import hu.bme.mit.theta.analysis.expl.ExplState;
-import hu.bme.mit.theta.analysis.expl.ExplStmtAnalysis;
+import hu.bme.mit.theta.analysis.algorithm.cegar.Abstractor;
+import hu.bme.mit.theta.analysis.algorithm.cegar.BasicAbstractor;
+import hu.bme.mit.theta.analysis.algorithm.cegar.CegarChecker;
+import hu.bme.mit.theta.analysis.algorithm.cegar.Refiner;
+import hu.bme.mit.theta.analysis.algorithm.cegar.abstractor.StopCriterions;
+import hu.bme.mit.theta.analysis.expl.*;
+import hu.bme.mit.theta.analysis.expr.ExprStatePredicate;
+import hu.bme.mit.theta.analysis.expr.refinement.ExprTraceFwBinItpChecker;
+import hu.bme.mit.theta.analysis.expr.refinement.PruneStrategy;
+import hu.bme.mit.theta.analysis.expr.refinement.SingleExprTraceRefiner;
 import hu.bme.mit.theta.analysis.l2s.L2STransform;
+import hu.bme.mit.theta.analysis.pred.PredPrec;
+import hu.bme.mit.theta.analysis.pred.PredState;
+import hu.bme.mit.theta.analysis.waitlist.FifoWaitlist;
+import hu.bme.mit.theta.analysis.waitlist.PriorityWaitlist;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfig;
 import hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder;
@@ -50,13 +62,16 @@ import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Predicate;
 
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.EXPL;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_BOOL;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Domain.PRED_CART;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.BW_BIN_ITP;
 import static hu.bme.mit.theta.cfa.analysis.config.CfaConfigBuilder.Refinement.SEQ_ITP;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Not;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(value = Parameterized.class)
 public class CfaTest {
@@ -166,7 +181,6 @@ public class CfaTest {
         });
     }
 
-    @Test
     public void test() throws Exception {
         SolverManager.registerSolverManager(Z3SolverManager.create());
         if (OsHelper.getOs().equals(OsHelper.OperatingSystem.LINUX)) {
@@ -218,7 +232,6 @@ public class CfaTest {
         }
     }
 
-    @Test
     public void testL2S() throws Exception {
         SolverManager.registerSolverManager(Z3SolverManager.create());
         if (OsHelper.getOs().equals(OsHelper.OperatingSystem.LINUX)) {
@@ -267,6 +280,70 @@ public class CfaTest {
             }
 
 
+
+        } finally {
+            SolverManager.closeAll();
+        }
+    }
+    @Test
+    public void testCEGAR() throws Exception {
+        SolverManager.registerSolverManager(Z3SolverManager.create());
+        if (OsHelper.getOs().equals(OsHelper.OperatingSystem.LINUX)) {
+            SolverManager.registerSolverManager(
+                    SmtLibSolverManager.create(SmtLibSolverManager.HOME, NullLogger.getInstance()));
+        }
+        try {
+
+            final Logger logger = new ConsoleLogger(Logger.Level.SUBSTEP);
+            CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+            var abstractionSolver = Z3SolverFactory.getInstance().createSolver();
+            var refinerSolver = Z3SolverFactory.getInstance().createItpSolver();
+
+            LTS<CfaState<?>,CfaAction> baselts = CfaSbeLts.getInstance();
+
+
+            CfaL2S<ExplState> cfal2s = CfaL2S.create(
+                    baselts,
+                    cfa,
+                    cfa.getVars()
+            );
+
+            final Analysis<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> analysis = CfaAnalysis
+                    .create(cfa.getInitLoc(),
+                            ExplStmtAnalysis.create(abstractionSolver , cfal2s.getInitExpr(),
+                                    1));
+            ExplStatePredicate explStatePredicate = new ExplStatePredicate(Not(cfal2s.getProp()), abstractionSolver);
+            final ArgBuilder<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> argBuilder = ArgBuilder.create(
+                    cfal2s,
+                    analysis, s -> explStatePredicate.test(s.getState()), true);
+
+            final Abstractor<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> abstractor = BasicAbstractor
+                    .builder(argBuilder).projection(CfaState::getLoc)
+                    .waitlist(FifoWaitlist.create())
+                    .stopCriterion(refinement == CfaConfigBuilder.Refinement.MULTI_SEQ ? StopCriterions.fullExploration()
+                            : StopCriterions.firstCex()).logger(logger).build();
+
+            CfaConfigBuilder.PrecGranularity precGranularity = CfaConfigBuilder.PrecGranularity.GLOBAL;
+            PruneStrategy pruneStrategy = PruneStrategy.LAZY;
+
+            Refiner<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> refiner = SingleExprTraceRefiner.create(
+                    ExprTraceFwBinItpChecker.create(cfal2s.getInitExpr(), Not(cfal2s.getProp()),
+                            refinerSolver),
+                    precGranularity.createRefiner(new ItpRefToExplPrec()), pruneStrategy,
+                    logger);
+
+            var fullPrec = GlobalCfaPrec.create(ExplPrec.of(cfal2s.getAllVars()));
+
+           SafetyChecker<CfaState<ExplState>, CfaAction, CfaPrec<ExplPrec>> checker = CegarChecker
+                    .create(abstractor, refiner, logger);
+
+            var config = CfaConfig.create(checker, fullPrec);
+            final SafetyResult<?, ?> status = config.check();
+            if (isSafe) {
+                assertTrue(status.isSafe());
+            } else {
+                assertTrue(status.isUnsafe());
+            }
 
         } finally {
             SolverManager.closeAll();

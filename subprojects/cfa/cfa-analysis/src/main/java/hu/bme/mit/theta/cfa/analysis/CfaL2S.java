@@ -141,4 +141,8 @@ public class CfaL2S<S extends ExprState> implements LTS<CfaState<S>,CfaAction> {
     public Expr<BoolType> getInitExpr() {
         return initExpr;
     }
+
+    public Expr<BoolType> getProp() {
+        return prop;
+    }
 }

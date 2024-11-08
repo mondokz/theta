@@ -26,3 +26,5 @@ trace.dot
 xcfa.c
 xcfa.dot
 xcfa.json
+.aider*
+.env

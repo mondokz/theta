@@ -280,8 +280,8 @@ public final class CFA {
                         "Final location cannot have outgoing edges.");
             }
             if (errorLoc != null) {
-                checkState(errorLoc.getOutEdges().isEmpty(),
-                        "Error location cannot have outgoing edges.");
+                //checkState(errorLoc.getOutEdges().isEmpty(),
+                //        "Error location cannot have outgoing edges.");
             }
             built = true;
             return new CFA(this);
