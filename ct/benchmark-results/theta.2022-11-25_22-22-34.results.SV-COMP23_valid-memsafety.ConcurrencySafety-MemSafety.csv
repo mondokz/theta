@@ -1,0 +1,19 @@
+tool	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set	SV-COMP23_valid-memsafety.ConcurrencySafety-MemSafety	SV-COMP23_valid-memsafety.ConcurrencySafety-MemSafety	SV-COMP23_valid-memsafety.ConcurrencySafety-MemSafety	SV-COMP23_valid-memsafety.ConcurrencySafety-MemSafety
+../sv-benchmarks/c/	status	cputime (s)	walltime (s)	memory (MB)
+pthread/bigshot_s.yml	ERROR (frontend failed)	3.4282167	1.8649935109997386	230.924288
+pthread-atomic/dekker.yml	true	17.3981037	9.523026560999824	508.379136
+pthread-ext/01b_inc.yml	TIMEOUT	120.6724542	105.60771611100063	662.671360
+pthread-wmm/mix000.oepc.yml	true	18.071139	10.125147474000187	558.956544
+pthread-wmm/mix000.opt.yml	true	18.7782992	10.225242428000456	530.944000
+ldv-races/race-1_1-join.yml	ERROR (frontend failed)	4.2583403	2.2949622389996875	236.904448
+ldv-races/race-1_2-join.yml	ERROR (frontend failed)	3.8624163	2.11160956599997	201.953280
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-1.yml	ERROR (frontend failed)	1.8143894	1.0688308160006272	157.270016
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-2.yml	ERROR (frontend failed)	1.9134552	1.1039019520003421	155.561984
+pthread-complex/bounded_buffer.yml	ERROR (frontend failed)	4.3123501	2.3254818879995582	227.901440
+pthread-complex/elimination_backoff_stack.yml	ERROR (frontend failed)	3.2707577	1.7998359499997605	256.540672
+pthread-driver-races/char_generic_nvram_nvram_llseek_nvram_unlocked_ioctl.yml	ERROR (frontend failed)	1.4455775	0.8834534450006686	115.122176
+pthread-driver-races/char_generic_nvram_nvram_llseek_read_nvram.yml	ERROR (frontend failed)	1.172946	0.7364827399997012	96.661504
+pthread-C-DAC/pthread-demo-datarace-1.yml	ERROR (frontend failed)	3.1664078	1.7582755939993149	210.038784
+weaver/array-eq-symm.wvr.yml	ERROR (frontend failed)	1.1663129	0.7376902670002892	95.645696
+weaver/array-eq-trans.wvr.yml	ERROR (frontend failed)	1.2149694	0.7729099059997679	90.415104

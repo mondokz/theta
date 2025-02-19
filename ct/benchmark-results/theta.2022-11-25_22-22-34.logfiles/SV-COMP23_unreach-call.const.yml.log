@@ -1,0 +1,30 @@
+./theta-start.sh ../sv-benchmarks/c/loop-invariants/const.c --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/loop-invariants/const.c --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+Arithmetic: INTEGER
+(SafetyResult Safe)
+java.io.FileNotFoundException: /home/runner/work/theta/theta/theta/witness.graphml (Permission denied)
+	at java.base/java.io.FileOutputStream.open0(Native Method)
+	at java.base/java.io.FileOutputStream.open(FileOutputStream.java:293)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:235)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:184)
+	at java.base/java.io.FileWriter.<init>(FileWriter.java:96)
+	at hu.bme.mit.theta.xcfa.cli.utils.XcfaWitnessWriter.writeWitness(XcfaWitnessWriter.kt:110)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:124)
+	at hu.bme.mit.theta.xcfa.cli.ExitCodesKt.exitOnError(ExitCodes.kt:43)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.run(XcfaCegarServer.java:78)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.main(XcfaCegarServer.java:137)
+Config successful, exiting: XcfaCegarConfig(errorDetectionType=ERROR_LOCATION, abstractionSolver=Z3, validateAbstractionSolver=false, domain=EXPL, maxEnum=1, search=ERR, initPrec=EMPTY, porLevel=NOPOR, refinementSolver=Z3, validateRefinementSolver=false, refinement=SEQ_ITP, exprSplitter=WHOLE, pruneStrategy=FULL, noCexCheck=false, timeoutMs=120000)

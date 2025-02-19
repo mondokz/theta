@@ -1,0 +1,19 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ConcurrencySafety-Main	SV-COMP23_unreach-call.ConcurrencySafety-Main	SV-COMP23_unreach-call.ConcurrencySafety-Main	SV-COMP23_unreach-call.ConcurrencySafety-Main
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+pthread/bigshot_s.yml	true	ERROR (frontend failed)	2.929924	1.627614480000375	232.419328
+pthread-atomic/dekker.yml	true	true	20.0005893	10.823764730999756	576.741376
+pthread-ext/01b_inc.yml	true	TIMEOUT	120.6922594	104.78245004000019	715.763712
+pthread-wmm/mix000.oepc.yml	false	ERROR (portfolio error)	33.9952498	20.153647574000388	654.974976
+pthread-wmm/mix000.opt.yml	false	false(unreach-call)	23.9594038	12.846018330000334	673.034240
+ldv-races/race-1_1-join.yml	true	ERROR (frontend failed)	4.1544026	2.2347031270001025	202.936320
+ldv-races/race-1_2-join.yml	false	ERROR (frontend failed)	4.0470442	2.18474785699982	205.893632
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-1.yml	true	ERROR (frontend failed)	1.7987735	1.0526536369998212	159.305728
+ldv-linux-3.14-races/linux-3.14--drivers--media--platform--marvell-ccic--cafe_ccic.ko.cil-2.yml	false	ERROR (frontend failed)	1.6531116	1.0136764650005716	156.803072
+pthread-complex/bounded_buffer.yml	false	ERROR (frontend failed)	4.0107047	2.173649026000021	206.286848
+pthread-complex/elimination_backoff_stack.yml	false	ERROR (frontend failed)	3.8049765	2.0583160460000727	204.615680
+pthread-driver-races/char_generic_nvram_nvram_llseek_nvram_unlocked_ioctl.yml	true	ERROR (frontend failed)	1.4186354	0.8877816859994709	119.066624
+pthread-driver-races/char_generic_nvram_nvram_llseek_read_nvram.yml	true	ERROR (frontend failed)	1.2542544	0.7907966590000797	110.985216
+pthread-C-DAC/pthread-demo-datarace-1.yml	true	ERROR (frontend failed)	3.6105041	1.97858331200041	201.809920
+weaver/array-eq-symm.wvr.yml	true	ERROR (frontend failed)	1.2550801	0.7914375649997965	96.235520
+weaver/array-eq-trans.wvr.yml	true	ERROR (frontend failed)	1.2533554	0.7794783509998524	95.645696

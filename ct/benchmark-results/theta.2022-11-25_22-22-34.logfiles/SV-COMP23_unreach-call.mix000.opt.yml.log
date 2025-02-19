@@ -1,0 +1,154 @@
+./theta-start.sh ../sv-benchmarks/c/pthread-wmm/mix000.opt.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/pthread-wmm/mix000.opt.i --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: self-embedded structs! Using long as a placeholder
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: Unknown simple type union pthread_attr_t
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+Warning: CompoundDefinitions are not yet implemented!
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: enums are not yet supported! Using int instead.
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: Unknown simple type union pthread_attr_t
+WARNING: Variable already exists: __unbuffered_cnt
+WARNING: Variable already exists: __unbuffered_p0_EAX
+WARNING: Variable already exists: __unbuffered_p0_EBX
+WARNING: Variable already exists: __unbuffered_p1_EAX
+WARNING: Variable already exists: __unbuffered_p1_EBX
+WARNING: Variable already exists: x
+WARNING: Variable already exists: y
+Arithmetic: INTEGER
+(SafetyResult Unsafe Trace length: 53)
+java.lang.RuntimeException: java.io.FileNotFoundException: /home/runner/work/theta/theta/theta/witness.graphml (Permission denied)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:130)
+	at hu.bme.mit.theta.xcfa.cli.ExitCodesKt.exitOnError(ExitCodes.kt:43)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.run(XcfaCegarServer.java:78)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.main(XcfaCegarServer.java:137)
+Caused by: java.io.FileNotFoundException: /home/runner/work/theta/theta/theta/witness.graphml (Permission denied)
+	at java.base/java.io.FileOutputStream.open0(Native Method)
+	at java.base/java.io.FileOutputStream.open(FileOutputStream.java:293)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:235)
+	at java.base/java.io.FileOutputStream.<init>(FileOutputStream.java:184)
+	at kotlin.io.FilesKt__FileReadWriteKt.writeBytes(FileReadWrite.kt:108)
+	at kotlin.io.FilesKt__FileReadWriteKt.writeText(FileReadWrite.kt:134)
+	at kotlin.io.FilesKt__FileReadWriteKt.writeText$default(FileReadWrite.kt:134)
+	at hu.bme.mit.theta.xcfa.cli.utils.XcfaWitnessWriter.writeWitness(XcfaWitnessWriter.kt:51)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:124)
+	... 3 more
+Portfolio from complex.kts could not be executed.javax.script.ScriptException: ErrorCodeException(code=202)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:101)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.compileAndEval(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at kotlin.script.experimental.jvmhost.jsr223.KotlinJsr223ScriptEngineImpl.compileAndEval(KotlinJsr223ScriptEngineImpl.kt:95)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.eval(KotlinJsr223JvmScriptEngineBase.kt:33)
+	at java.scripting/javax.script.AbstractScriptEngine.eval(AbstractScriptEngine.java:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.run(XcfaCli.kt:248)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.access$run(XcfaCli.kt:57)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli$Companion.main(XcfaCli.kt:305)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.main(XcfaCli.kt)
+Caused by: ErrorCodeException(code=202)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:174)
+	at ScriptingHost6e8fdd19_Line_0.<init>(ScriptingHost6e8fdd19_Line_0.kts:57)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.evalWithConfigAndOtherScriptsResults(BasicJvmScriptEvaluator.kt:100)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke$suspendImpl(BasicJvmScriptEvaluator.kt:47)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke(BasicJvmScriptEvaluator.kt)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator$eval$1$res$1.invokeSuspend(legacyReplEvaluation.kt:62)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlin.coroutines.ContinuationKt.startCoroutine(Continuation.kt:115)
+	at kotlin.script.experimental.impl.RunSuspendKt.internalScriptingRunSuspend(runSuspend.kt:19)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator.eval(legacyReplEvaluation.kt:62)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.eval(GenericReplCompilingEvaluator.kt:76)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.compileAndEval(GenericReplCompilingEvaluator.kt:51)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:64)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:90)
+	... 8 more

@@ -1,0 +1,24 @@
+./theta-start.sh ../sv-benchmarks/c/verifythis/tree_max_incorrect.c --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/verifythis/tree_max_incorrect.c --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+Warning: using int(1) as a string constant
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: self-embedded structs! Using long as a placeholder
+WARNING: sizeof got unknown type, using a literal 0 instead.
+Frontend failed!

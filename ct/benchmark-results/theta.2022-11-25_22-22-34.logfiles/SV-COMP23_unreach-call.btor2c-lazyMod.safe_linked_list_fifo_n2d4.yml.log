@@ -1,0 +1,8 @@
+./theta-start.sh ../sv-benchmarks/c/hardware-verification-array/btor2c-lazyMod.safe_linked_list_fifo_n2d4.c --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/hardware-verification-array/btor2c-lazyMod.safe_linked_list_fifo_n2d4.c --smt-home /home/runner/work/theta/theta/theta/solvers
+Frontend failed!

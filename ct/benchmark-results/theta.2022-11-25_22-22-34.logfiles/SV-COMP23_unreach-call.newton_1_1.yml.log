@@ -1,0 +1,78 @@
+./theta-start.sh ../sv-benchmarks/c/floats-cdfpl/newton_1_1.i --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp
+
+
+--------------------------------------------------------------------------------
+
+
+LD_LIBRARY_PATH=/home/runner/work/theta/theta/theta/lib /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Xss120m -Xmx14210m -jar /home/runner/work/theta/theta/theta/theta.jar --witness-only --portfolio COMPLEX --loglevel RESULT --property ../sv-benchmarks/c/properties/unreach-call.prp --input ../sv-benchmarks/c/floats-cdfpl/newton_1_1.i --smt-home /home/runner/work/theta/theta/theta/solvers
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+WARNING: signedness of the type char is implementation specific. Right now it is interpreted as a signed char.
+Arithmetic: BITWISE_FLOAT
+Could not parse (assume (/= (ite (= (ite (< (fptofp main::x) (#b0 #b01111111011 #b1001100110011001100110011001100110011001100110011010)) #b00000000000000000000000000000001 #b00000000000000000000000000000000) #b00000000000000000000000000000000) #b00000000000000000000000000000001 #b00000000000000000000000000000000) #b00000000000000000000000000000000))
+scope: Scope{
+enclosingScope: null
+symbolTable: SymbolTable(hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@5c1a8622, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@ff684e1, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@23aa363a, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@278f8425, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@695a69a1, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@681e144, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@2875b016, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@6145b81e, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@64355120, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@64b7225f, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@33db72bd, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@7f92b990, hu.bme.mit.theta.grammar.gson.VarDeclAdapter$$Lambda$30/0x0000000800ca7638@31e04b13) }
+env: Env( (Frame reach_error_ret <- (var reach_error_ret (Bv 1)) assume_abort_if_not_ret <- (var assume_abort_if_not_ret (Bv 1)) assume_abort_if_not::cond <- (var assume_abort_if_not::cond (Bv 32)) f_ret <- (var f_ret (Fp 8 24)) f::x <- (var f::x (Fp 8 24)) fp_ret <- (var fp_ret (Fp 8 24)) fp::x <- (var fp::x (Fp 8 24)) main_ret <- (var main_ret (Bv 32)) main::IN <- (var main::IN (Fp 8 24)) main::x <- (var main::x (Fp 8 24)) call_assume_abort_if_not_ret2 <- (var call_assume_abort_if_not_ret2 (Bv 1)) call_f_ret3 <- (var call_f_ret3 (Fp 8 24)) call_fp_ret4 <- (var call_fp_ret4 (Fp 8 24))) )
+Erroneous XCFA, see file /tmp/xcfa7971564245272249620.json
+com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: java.lang.reflect.InvocationTargetException
+	at com.google.gson.Gson.fromJson(Gson.java:1070)
+	at hu.bme.mit.theta.xcfa.gson.XcfaAdapter.parseProcedures(XcfaAdapter.kt:178)
+	at hu.bme.mit.theta.xcfa.gson.XcfaAdapter.read(XcfaAdapter.kt:101)
+	at hu.bme.mit.theta.xcfa.gson.XcfaAdapter.read(XcfaAdapter.kt:33)
+	at com.google.gson.internal.bind.TypeAdapters$34$1.read(TypeAdapters.java:979)
+	at com.google.gson.Gson.fromJson(Gson.java:1058)
+	at com.google.gson.Gson.fromJson(Gson.java:1016)
+	at com.google.gson.Gson.fromJson(Gson.java:959)
+	at com.google.gson.Gson.fromJson(Gson.java:927)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.lambda$run$0(XcfaCegarServer.java:93)
+	at hu.bme.mit.theta.xcfa.cli.ExitCodesKt.exitOnError(ExitCodes.kt:43)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.run(XcfaCegarServer.java:78)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarServer.main(XcfaCegarServer.java:137)
+Caused by: java.lang.IllegalStateException: java.lang.reflect.InvocationTargetException
+	at hu.bme.mit.theta.xcfa.gson.XcfaLabelAdapter.read(XcfaLabelAdapter.kt:84)
+	at hu.bme.mit.theta.xcfa.gson.XcfaLabelAdapter.read(XcfaLabelAdapter.kt:67)
+	at hu.bme.mit.theta.xcfa.gson.XcfaLabelAdapter.read(XcfaLabelAdapter.kt:33)
+	at com.google.gson.internal.bind.TypeAdapters$34$1.read(TypeAdapters.java:979)
+	at com.google.gson.Gson.fromJson(Gson.java:1058)
+	... 12 more
+Portfolio from complex.kts could not be executed.javax.script.ScriptException: ErrorCodeException(code=202)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:101)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.compileAndEval(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at kotlin.script.experimental.jvmhost.jsr223.KotlinJsr223ScriptEngineImpl.compileAndEval(KotlinJsr223ScriptEngineImpl.kt:95)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.eval(KotlinJsr223JvmScriptEngineBase.kt:33)
+	at java.scripting/javax.script.AbstractScriptEngine.eval(AbstractScriptEngine.java:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.run(XcfaCli.kt:248)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.access$run(XcfaCli.kt:57)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli$Companion.main(XcfaCli.kt:305)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCli.main(XcfaCli.kt)
+Caused by: ErrorCodeException(code=202)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:210)
+	at hu.bme.mit.theta.xcfa.cli.XcfaCegarConfig$checkInProcess$1.invoke(XcfaCegarConfig.kt:174)
+	at ScriptingHost1416cf9f_Line_0.<init>(ScriptingHost1416cf9f_Line_0.kts:57)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.evalWithConfigAndOtherScriptsResults(BasicJvmScriptEvaluator.kt:100)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke$suspendImpl(BasicJvmScriptEvaluator.kt:47)
+	at kotlin.script.experimental.jvm.BasicJvmScriptEvaluator.invoke(BasicJvmScriptEvaluator.kt)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator$eval$1$res$1.invokeSuspend(legacyReplEvaluation.kt:62)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlin.coroutines.ContinuationKt.startCoroutine(Continuation.kt:115)
+	at kotlin.script.experimental.impl.RunSuspendKt.internalScriptingRunSuspend(runSuspend.kt:19)
+	at kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator.eval(legacyReplEvaluation.kt:62)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.eval(GenericReplCompilingEvaluator.kt:76)
+	at org.jetbrains.kotlin.cli.common.repl.GenericReplCompilingEvaluatorBase.compileAndEval(GenericReplCompilingEvaluator.kt:51)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:64)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase$compileAndEval$1.invoke(KotlinJsr223JvmScriptEngineBase.kt:63)
+	at org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineBase.asJsr223EvalResult(KotlinJsr223JvmScriptEngineBase.kt:90)
+	... 8 more

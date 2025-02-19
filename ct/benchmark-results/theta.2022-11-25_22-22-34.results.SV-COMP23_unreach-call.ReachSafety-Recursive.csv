@@ -1,0 +1,15 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Recursive	SV-COMP23_unreach-call.ReachSafety-Recursive	SV-COMP23_unreach-call.ReachSafety-Recursive	SV-COMP23_unreach-call.ReachSafety-Recursive
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+recursive/Ackermann01-2.yml	true	ERROR (portfolio error)	13.3494027	7.561258165000254	449.404928
+recursive/Ackermann02.yml	false	ERROR (portfolio error)	13.4516684	7.73070712200024	416.690176
+recursive-simple/afterrec-1.yml	false	TIMEOUT	120.4993267	110.03640164599983	629.628928
+recursive-simple/afterrec-2.yml	true	TIMEOUT	120.5297884	109.6859011409997	639.696896
+recursive-with-pointer/simple-recursive.yml	true	ERROR (portfolio error)	14.416323	7.950792173000082	484.950016
+verifythis/prefixsum_rec.yml	true	ERROR (frontend failed)	1.2889798	0.8179216259995883	96.923648
+verifythis/tree_del_rec.yml	false	ERROR (frontend failed)	1.4703119	0.9425143329999628	101.507072
+verifythis/tree_del_rec_incorrect.yml	false	ERROR (frontend failed)	1.3100881	0.8339680810004211	94.269440
+verifythis/tree_max.yml	false	ERROR (frontend failed)	1.1827966	0.7322329949993218	88.662016
+verifythis/tree_max_incorrect.yml	false	ERROR (frontend failed)	1.1960192	0.7622311850000187	91.152384
+verifythis/elimination_max_rec.yml	true	ERROR (frontend failed)	1.1714125	0.763357896999878	86.495232
+verifythis/elimination_max_rec_onepoint.yml	true	ERROR (frontend failed)	1.1886186	0.7691043790000549	93.626368

@@ -1,0 +1,22 @@
+tool		Theta 4.2.2	Theta 4.2.2	Theta 4.2.2	Theta 4.2.2
+run set		SV-COMP23_unreach-call.ReachSafety-Heap	SV-COMP23_unreach-call.ReachSafety-Heap	SV-COMP23_unreach-call.ReachSafety-Heap	SV-COMP23_unreach-call.ReachSafety-Heap
+../sv-benchmarks/c/		status	cputime (s)	walltime (s)	memory (MB)
+heap-manipulation/bubble_sort_linux-1.yml	true	ERROR (frontend failed)	2.5128044	1.4100229780001428	196.616192
+heap-manipulation/bubble_sort_linux-2.yml	false	ERROR (frontend failed)	2.6191471	1.4940808720002678	200.790016
+list-properties/alternating_list-1.yml	true	ERROR (frontend failed)	2.0827975	1.18686675500021	170.553344
+list-properties/alternating_list-2.yml	false	ERROR (frontend failed)	2.0601051	1.2012565960003485	168.603648
+ldv-regression/1_3.yml	false	ERROR (frontend failed)	0.8321706	0.5722179200001847	74.498048
+ldv-regression/alias_of_return.c_1.yml	true	ERROR (frontend failed)	0.9713326	0.6234839220001049	79.503360
+ddv-machzwd/ddv_machzwd_all.yml	false	ERROR (frontend failed)	2.9144658	1.629396899999847	203.714560
+ddv-machzwd/ddv_machzwd_inb.yml	true	ERROR (frontend failed)	2.9011691	1.6074524700002257	222.289920
+forester-heap/dll-01-1.yml	false	ERROR (frontend failed)	2.0643269	1.1781364779999421	183.808000
+forester-heap/dll-01-2.yml	true	ERROR (frontend failed)	2.0687663	1.1927521239999805	182.771712
+list-ext2-properties/list_and_tree_cnstr-1.yml	false	ERROR (frontend failed)	1.817637	1.0455040519996146	164.950016
+list-ext2-properties/list_and_tree_cnstr-2.yml	true	ERROR (frontend failed)	1.6161925	0.9429238269999587	159.080448
+ldv-sets/test_add-1.yml	false	ERROR (frontend failed)	1.8127364	1.079679294000016	175.239168
+ldv-sets/test_add-2.yml	true	ERROR (frontend failed)	1.8082562	1.0631988860000092	168.853504
+list-simple/dll2c_append_equal.yml	true	ERROR (frontend failed)	2.2072816	1.2524333240003216	181.587968
+list-simple/dll2c_append_unequal.yml	true	ERROR (frontend failed)	2.0846478	1.2039913290000186	178.380800
+heap-data/calendar.yml	true	ERROR (frontend failed)	1.7283898	1.0158937020000849	164.773888
+heap-data/cart.yml	true	ERROR (frontend failed)	1.910599	1.1031075949999831	164.630528
+list-ext3-properties/dll_circular_traversal-2.yml	true	ERROR (frontend failed)	2.1066787	1.220929002000048	177.295360
