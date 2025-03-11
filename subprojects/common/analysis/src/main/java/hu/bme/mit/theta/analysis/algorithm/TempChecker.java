@@ -20,41 +20,35 @@ import hu.bme.mit.theta.analysis.Cex;
 import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
 import hu.bme.mit.theta.analysis.algorithm.arg.ArgNode;
-import hu.bme.mit.theta.analysis.algorithm.cegar.Abstractor;
-import hu.bme.mit.theta.analysis.algorithm.cegar.Refiner;
 import hu.bme.mit.theta.analysis.expr.ExprAction;
 import hu.bme.mit.theta.analysis.expr.ExprState;
-import hu.bme.mit.theta.analysis.utils.ProofVisualizer;
-import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
-import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
+import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 
 import java.util.List;
 
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Or;
 
-public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<InvariantForRlive, C, P>{
+public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<Pr, C, P>{
 
-    private final ARG<ExprState, ExprAction> proof;
-    private final SafetyChecker<?, ?, ?> checker;
+    private StsConfig config;
 
-    public TempChecker(ARG<ExprState, ExprAction> proof,
-                       final Abstractor<P, Pr> abstractor,
-                       final Refiner<P, Pr, C> refiner,
-                       final Logger logger,
-                       final ProofVisualizer<? super Pr> proofVisualizer,
-                       SafetyChecker<?,?,?> checker) {
-        this.proof = proof;
-        this.checker = checker;
+    public TempChecker() {
     }
 
     @Override
-    public SafetyResult<InvariantForRlive, C> check(P input) {
-        SafetyResult<?,?> result = checker.check();
-        ARG<ExprState, ExprAction> proof = (ARG<ExprState, ExprAction>) result.getProof();
-        return (SafetyResult<InvariantForRlive, C>) SafetyResult.unsafe(result.asUnsafe().getCex(),extractInvariant(proof));
+    public SafetyResult<Pr, C> check(P input) {
+        SafetyResult<?,?> result = config.check();
+        if(result.isUnsafe()){
+            return (SafetyResult<Pr, C>) result;
+        } else {
+            ARG<ExprState, ExprAction> proof = (ARG<ExprState, ExprAction>) result.getProof();
+            return (SafetyResult<Pr, C>) SafetyResult.unsafe(result.asUnsafe().getCex(),extractInvariant(proof));
+        }
+
+
         }
 
     public InvariantForRlive extractInvariant(ARG<ExprState, ExprAction> proof) {
@@ -71,6 +65,10 @@ public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implem
                 .toList();
 
         return new InvariantForRlive(Or(stateExprs));
+    }
+
+    public void setConfig(StsConfig config){
+        this.config = config;
     }
 
     }
