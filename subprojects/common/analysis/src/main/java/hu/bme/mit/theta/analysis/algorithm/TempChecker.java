@@ -18,12 +18,19 @@ package hu.bme.mit.theta.analysis.algorithm;
 
 import hu.bme.mit.theta.analysis.Cex;
 import hu.bme.mit.theta.analysis.Prec;
+import hu.bme.mit.theta.analysis.Trace;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
 import hu.bme.mit.theta.analysis.algorithm.arg.ArgNode;
 import hu.bme.mit.theta.analysis.expr.ExprAction;
 import hu.bme.mit.theta.analysis.expr.ExprState;
+import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
+import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
+import hu.bme.mit.theta.solver.z3legacy.Z3SolverManager;
+import hu.bme.mit.theta.sts.STS;
+import hu.bme.mit.theta.sts.analysis.StsAction;
+import hu.bme.mit.theta.sts.analysis.StsTraceConcretizer;
 import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 
 import java.util.List;
@@ -31,27 +38,31 @@ import java.util.List;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Or;
 
-public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<Pr, C, P>{
+public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<InvariantForRlive, Trace<Valuation, StsAction>, P>{
 
-    private StsConfig config;
+    private StsConfig<ExprState,StsAction,P> config;
+    private STS sts;
 
     public TempChecker() {
     }
 
     @Override
-    public SafetyResult<Pr, C> check(P input) {
-        SafetyResult<?,?> result = config.check();
+    public SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> check(P input) {
+        SafetyResult<ARG<ExprState, StsAction>,Trace<ExprState, StsAction>> result = config.check();
+        ARG<ExprState, StsAction> proof = result.getProof();
+        var invariant = extractInvariant(proof);
+
         if(result.isUnsafe()){
-            return (SafetyResult<Pr, C>) result;
+            var cex = StsTraceConcretizer.concretize(sts, result.asUnsafe().getCex(), Z3LegacySolverFactory.getInstance());
+            return SafetyResult.unsafe(cex,invariant);
         } else {
-            ARG<ExprState, ExprAction> proof = (ARG<ExprState, ExprAction>) result.getProof();
-            return (SafetyResult<Pr, C>) SafetyResult.unsafe(result.asUnsafe().getCex(),extractInvariant(proof));
+            return SafetyResult.safe(invariant);
         }
 
 
         }
 
-    public InvariantForRlive extractInvariant(ARG<ExprState, ExprAction> proof) {
+    public InvariantForRlive extractInvariant(ARG<ExprState, StsAction> proof) {
         List<ExprState> allStates = proof.getNodes()
                 .map(ArgNode::getState)
                 .toList();
@@ -67,8 +78,9 @@ public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implem
         return new InvariantForRlive(Or(stateExprs));
     }
 
-    public void setConfig(StsConfig config){
+    public void setConfig(StsConfig config, STS sts){
         this.config = config;
+        this.sts = sts;
     }
 
     }
