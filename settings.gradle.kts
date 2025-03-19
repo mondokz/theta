@@ -23,6 +23,7 @@ include(
     "common/multi-tests",
     "common/ltl",
     "common/ltl-cli",
+    "common/rlive",
 
     "frontends/c-frontend",
     "frontends/petrinet-frontend/petrinet-model",

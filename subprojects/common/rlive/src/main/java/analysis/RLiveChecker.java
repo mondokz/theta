@@ -14,9 +14,12 @@
  *  limitations under the License.
  */
 
-package hu.bme.mit.theta.analysis.algorithm;
+package analysis;
 
 import hu.bme.mit.theta.analysis.*;
+import hu.bme.mit.theta.analysis.algorithm.Proof;
+import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
+import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expr.ExprAction;
 import hu.bme.mit.theta.analysis.expr.ExprState;
@@ -27,9 +30,7 @@ import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
-import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs;
 import hu.bme.mit.theta.core.utils.ExprUtils;
-import hu.bme.mit.theta.core.utils.indexings.VarIndexing;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.SolverManager;
@@ -43,7 +44,6 @@ import java.util.*;
 
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
-import static hu.bme.mit.theta.core.type.bvtype.BvExprs.Eq;
 
 public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
 

@@ -14,11 +14,14 @@
  *  limitations under the License.
  */
 
-package hu.bme.mit.theta.analysis.algorithm;
+package analysis;
 
 import hu.bme.mit.theta.analysis.Cex;
 import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.Trace;
+import hu.bme.mit.theta.analysis.algorithm.Proof;
+import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
+import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
 import hu.bme.mit.theta.analysis.algorithm.arg.ArgNode;
 import hu.bme.mit.theta.analysis.expr.ExprAction;
@@ -27,7 +30,6 @@ import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
-import hu.bme.mit.theta.solver.z3legacy.Z3SolverManager;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.StsAction;
 import hu.bme.mit.theta.sts.analysis.StsTraceConcretizer;
@@ -38,7 +40,7 @@ import java.util.List;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.Or;
 
-public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<InvariantForRlive, Trace<Valuation, StsAction>, P>{
+public class TempChecker <P extends Prec,Pr extends Proof, C extends Cex> implements SafetyChecker<InvariantForRlive, Trace<Valuation, StsAction>, P> {
 
     private StsConfig<ExprState,StsAction,P> config;
     private STS sts;

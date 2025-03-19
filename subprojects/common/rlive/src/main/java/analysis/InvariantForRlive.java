@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
-package hu.bme.mit.theta.analysis.algorithm;
+package analysis;
 
+import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 
-public class InvariantForRlive implements Proof{
+public class InvariantForRlive implements Proof {
 
     private Expr<BoolType> invariant;
 
