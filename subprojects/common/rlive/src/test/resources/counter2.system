@@ -1,0 +1,11 @@
+specification Counter2 {
+    property safe: {
+        var x: int
+        invariant x >= 0
+
+        initial x = 0
+
+        transition if x < 5 then x' = x + 1 else x' = 1
+
+    } models G(x = 2)
+}

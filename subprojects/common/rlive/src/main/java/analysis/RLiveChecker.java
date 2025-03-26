@@ -20,9 +20,6 @@ import hu.bme.mit.theta.analysis.*;
 import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
-import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
-import hu.bme.mit.theta.analysis.expr.ExprAction;
-import hu.bme.mit.theta.analysis.expr.ExprState;
 import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -33,7 +30,6 @@ import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
-import hu.bme.mit.theta.solver.SolverManager;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.StsAction;
@@ -46,23 +42,16 @@ import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
 
 public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
-
-    private final Solver solver;
     private final TempChecker<?,?,?> baseChecker;
-    private final Logger logger;
-    private final MonolithicExpr monolithicExpr;
+    private final STS monolithicExpr;
     private Set<Valuation> reachableQStates;
     Expr<BoolType> c;
 
     public RLiveChecker(
-            final MonolithicExpr monolithicExpr,
-            final SolverManager solverManager,
-            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
-            final Logger logger) throws Exception {
+            final STS monolithicExpr,
+            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker) throws Exception {
         this.monolithicExpr = monolithicExpr;
-        this.solver = solverManager.getSolverFactory("Z3").createSolver();
         this.baseChecker = baseChecker;
-        this.logger = logger;
         this.reachableQStates = new HashSet<>();
     }
 
@@ -71,8 +60,9 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         c = False();
 
         while (true) {
-
-            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(monolithicExpr.getInitExpr(), monolithicExpr.getTransExpr(), monolithicExpr.getPropExpr());
+            System.out.println("huh");
+            var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), monolithicExpr.getInit());
+            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
 
             if (result.isUnsafe()) {
                 Valuation s = extractReachedNotQState(result);
@@ -85,15 +75,13 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     }
 
     private boolean searchCex(Valuation s, Set<Valuation> reachableQStates) {
-        if (reachableQStates.isEmpty()) {
-            return false;
-        }
         if(reachableQStates.contains(s)){
             return true;
         }
         while(true){
-            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(s.toExpr(), monolithicExpr.getTransExpr(), monolithicExpr.getPropExpr());;
-
+            var sts = prepareExpressions(s.toExpr(), monolithicExpr.getProp(), monolithicExpr.getInit());
+            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);;
+            System.out.println("huh2");
             if(result.isUnsafe()){
                 Valuation t = extractReachedNotQState(result);
                 var combinedSet = new HashSet<>(reachableQStates);
@@ -109,12 +97,8 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         }
     }
 
-    private Valuation extractReachedNotQState(SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result) {
-        Trace<Valuation, StsAction> trace =  result.asUnsafe().getCex();
-        return trace.getStates().get(trace.getStates().size() - 1);
-    }
 
-    private SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> checkReachability(Expr<BoolType> i, Expr<BoolType> t, Expr<BoolType> q ) {
+    private STS prepareExpressions(Expr<BoolType> t, Expr<BoolType> q, Expr<BoolType> i) {
         var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
         var transExpr = And(t, And(Not(c), Not(cPrime)));
         var propertyExpr = And(Not(q), And(t, Not(cPrime)));
@@ -129,16 +113,24 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
         // for each v : v = v_temp''
         Collection<? extends Expr<BoolType>> varEqTempVar = varMap.entrySet().stream()
-                .map(entry -> EqExpr.create2(entry.getKey().getRef(), ExprUtils.applyPrimes(entry.getValue().getRef(),VarIndexingFactory.indexing(2))))
+                .map(entry -> EqExpr.create2(entry.getKey().getRef(), ExprUtils.applyPrimes(entry.getValue().getRef(),VarIndexingFactory.indexing(1))))
                 .toList();
 
         var Ts = And(
-                ExprUtils.applyPrimes(ExprUtils.changeDecls(i,varMap),VarIndexingFactory.indexing(1)),
-                ExprUtils.applyPrimes(ExprUtils.changeDecls(t,varMap),VarIndexingFactory.indexing(1)),
+                ExprUtils.changeDecls(i,varMap),
+                ExprUtils.changeDecls(t,varMap),
                 And(varEqTempVar)
         );
-        
-        STS sts = new STS(Ts,transExpr,propertyExpr);
+
+        return new STS(Ts,transExpr,propertyExpr);
+    }
+
+    private Valuation extractReachedNotQState(SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result) {
+        Trace<Valuation, StsAction> trace =  result.asUnsafe().getCex();
+        return trace.getStates().get(trace.getStates().size() - 1);
+    }
+
+    private SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> checkReachability(STS sts) {
         StsConfig<? extends State, ? extends Action, ? extends Prec> config =
                 new StsConfigBuilder(StsConfigBuilder.Domain.EXPL, StsConfigBuilder.Refinement.FW_BIN_ITP, Z3LegacySolverFactory.getInstance())
                         .build(sts);

@@ -20,6 +20,8 @@ import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Refinement.S
 import hu.bme.mit.theta.analysis.Action;
 import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.State;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.analysis.expl.ExplPrec;
 import hu.bme.mit.theta.common.Utils;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
@@ -58,14 +60,17 @@ public class RLiveTest {
         return Arrays.asList(
                 new Object[][] {
 
-                        {"src/test/resources/counter.system", PRED_CART, SEQ_ITP, true},
-                        {"src/test/resources/counter_bad.system", PRED_CART, SEQ_ITP, false},
+                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true},
+                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
+                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, false},
+                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
+
 
                 });
     }
 
     @Test
-    public void test() throws IOException {
+    public void test() throws Exception {
         STS sts = null;
         if (filePath.endsWith("aag")) {
             sts = AigerToSts.createSts(AigerParser.parse(filePath));
@@ -80,10 +85,8 @@ public class RLiveTest {
                 new StsConfigBuilder(domain, refinement, Z3LegacySolverFactory.getInstance())
                         .build(sts);
 
-        var x = new TempChecker<>();
-        x.setConfig(config,sts);
-         var res = x.check();
+        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>());
 
-        Assert.assertEquals(isSafe, config.check().isSafe());
+        Assert.assertEquals(isSafe, x.check().isSafe());
     }
 }
