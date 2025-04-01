@@ -62,7 +62,7 @@ public class RLiveTest {
 
                         {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true},
                         {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
-                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, false},
+                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true},
                         {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
 
 

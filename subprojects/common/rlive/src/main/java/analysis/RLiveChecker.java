@@ -21,12 +21,16 @@ import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.common.logging.Logger;
+import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
+import hu.bme.mit.theta.core.model.ImmutableValuation;
 import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
+import hu.bme.mit.theta.core.type.LitExpr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
+import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
@@ -37,6 +41,7 @@ import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
@@ -46,6 +51,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private final STS monolithicExpr;
     private Set<Valuation> reachableQStates;
     Expr<BoolType> c;
+    boolean cModified;
 
     public RLiveChecker(
             final STS monolithicExpr,
@@ -56,42 +62,50 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     }
 
     public SafetyResult<Proof, Cex> check(P input) {
-
+        cModified = false;
         c = False();
 
         while (true) {
-            System.out.println("huh");
+
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), monolithicExpr.getInit());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
 
             if (result.isUnsafe()) {
                 Valuation s = extractReachedNotQState(result);
-                if(searchCex(s,reachableQStates)){
-                    return SafetyResult.unsafe(null,null);
+                Set<Valuation> reachableQStatesFromS = new HashSet<>();
+                if(searchCex(s,reachableQStatesFromS)){
+                    return SafetyResult.unsafe(result.asUnsafe().getCex(),result.asUnsafe().getProof());
                 };
+            } else {
+                return SafetyResult.safe(result.asSafe().getProof());
             }
 
         }
     }
 
     private boolean searchCex(Valuation s, Set<Valuation> reachableQStates) {
-        if(reachableQStates.contains(s)){
+        if(reachableQStates.contains(s)) {
             return true;
+        } else {
+            reachableQStates.add(s);
         }
         while(true){
-            var sts = prepareExpressions(s.toExpr(), monolithicExpr.getProp(), monolithicExpr.getInit());
+            var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);;
-            System.out.println("huh2");
+
             if(result.isUnsafe()){
                 Valuation t = extractReachedNotQState(result);
-                var combinedSet = new HashSet<>(reachableQStates);
-                combinedSet.add(t);
-                if (searchCex(t,combinedSet)){
+                if (searchCex(t,reachableQStates)){
                     return true;
                 }
             } else {
                 var invariant = (InvariantForRlive)result.getProof();
-                c = And(c,invariant.getInvariant());
+                if(cModified){
+                    c = And(c,invariant.getInvariant());
+                } else {
+                    c = invariant.getInvariant();
+                    cModified = true;
+                }
                 return false;
             }
         }
@@ -101,9 +115,9 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private STS prepareExpressions(Expr<BoolType> t, Expr<BoolType> q, Expr<BoolType> i) {
         var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
         var transExpr = And(t, And(Not(c), Not(cPrime)));
-        var propertyExpr = And(Not(q), And(t, Not(cPrime)));
+        var targetExpr = And(Not(q), And(t, Not(cPrime)));
 
-        STS tempSts = new STS(i,transExpr,propertyExpr);
+        STS tempSts = new STS(i,transExpr,Not(targetExpr));
         Map<VarDecl<?>,VarDecl<?>> varMap = new HashMap<>();
 
         tempSts.getVars().forEach(var -> {
@@ -122,12 +136,17 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 And(varEqTempVar)
         );
 
-        return new STS(Ts,transExpr,propertyExpr);
+        return new STS(Ts,transExpr,Not(targetExpr));
     }
 
     private Valuation extractReachedNotQState(SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result) {
         Trace<Valuation, StsAction> trace =  result.asUnsafe().getCex();
-        return trace.getStates().get(trace.getStates().size() - 1);
+        Valuation val = trace.getStates().get(trace.getStates().size() - 1);
+
+        Map<Decl<?>,LitExpr<?>> filteredMap = val.toMap().entrySet().stream()
+                .filter(entry -> !entry.getKey().getName().contains("_temp"))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return ImmutableValuation.from(filteredMap);
     }
 
     private SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> checkReachability(STS sts) {
