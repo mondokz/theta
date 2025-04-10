@@ -34,6 +34,7 @@ import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
+import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.StsAction;
@@ -52,13 +53,18 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private Set<Valuation> reachableQStates;
     Expr<BoolType> c;
     boolean cModified;
+    final boolean pruneEnabled;
+    private UCSolver UCsolver;
 
     public RLiveChecker(
             final STS monolithicExpr,
-            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker) throws Exception {
+            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
+            final boolean pruneEnabled) throws Exception {
+        this.pruneEnabled = pruneEnabled;
         this.monolithicExpr = monolithicExpr;
         this.baseChecker = baseChecker;
         this.reachableQStates = new HashSet<>();
+        UCsolver = Z3LegacySolverFactory.getInstance().createUCSolver();
     }
 
     public SafetyResult<Proof, Cex> check(P input) {
@@ -90,6 +96,11 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             reachableQStates.add(s);
         }
         while(true){
+
+            if (pruneEnabled){
+                return pruneDead(s);
+            }
+
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);;
 
@@ -108,6 +119,33 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 }
                 return false;
             }
+        }
+    }
+
+    private boolean pruneDead(Valuation s) {
+        while (true){
+            var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
+            var expr = And(s.toExpr(), monolithicExpr.getTrans(), Not(cPrime));
+            UCsolver.push();
+            UCsolver.track(expr);
+            if (UCsolver.check().isSat()){
+                var model = UCsolver.getModel();
+                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime),model.toExpr());
+                UCsolver.pop();
+                UCsolver.push();
+                UCsolver.track(expr2);
+                if (UCsolver.check().isUnsat()){
+                    c = Or(c, And(UCsolver.getUnsatCore()));
+                } else {
+                    return false;
+                }
+                UCsolver.pop();
+            } else if (UCsolver.check().isUnsat()) {
+                UCsolver.pop();
+                return true;
+            }
+
+
         }
     }
 

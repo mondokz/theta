@@ -1,0 +1,30 @@
+main process cfa {
+    var position : int
+
+    init loc L0
+    loc L1
+    loc L2
+    loc L3
+    loc L4
+    loc L5
+    loc L6
+    loc L7
+
+    final loc END
+    error loc ERR
+
+
+
+    L0 -> L1 { position := 1 }
+    L0 -> L6 { position := 6 }
+
+
+    L1 -> L2 { position := 2 }
+    L2 -> L3 { position := 3 }
+    L3 -> L4 { position := 4 }
+    L4 -> L5 { position := 5 }
+
+    L6 -> L7 { position := 7 }
+    L6 -> L3 { position := 3 }
+
+}

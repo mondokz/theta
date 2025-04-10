@@ -14,6 +14,10 @@ package analysis;/*
  *  limitations under the License.
  */
 
+import static hu.bme.mit.theta.core.type.abstracttype.AbstractExprs.Neq;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.True;
+import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.And;
+import static hu.bme.mit.theta.core.type.inttype.IntExprs.Int;
 import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Domain.*;
 import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Refinement.SEQ_ITP;
 
@@ -22,7 +26,14 @@ import hu.bme.mit.theta.analysis.Prec;
 import hu.bme.mit.theta.analysis.State;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expl.ExplPrec;
+import hu.bme.mit.theta.cfa.CFA;
+import hu.bme.mit.theta.cfa.analysis.CfaToMonolithicExprKt;
+import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.Utils;
+import hu.bme.mit.theta.core.type.Expr;
+import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
+import hu.bme.mit.theta.core.type.booltype.BoolType;
+import hu.bme.mit.theta.core.type.booltype.TrueExpr;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.aiger.AigerParser;
@@ -35,10 +46,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import scala.Int;
 
 @RunWith(value = Parameterized.class)
 public class RLiveTest {
@@ -55,21 +69,26 @@ public class RLiveTest {
     @Parameterized.Parameter(value = 3)
     public boolean isSafe;
 
+    @Parameterized.Parameter(value = 4)
+    public List<Integer> acceptingStateIds;
+
     @Parameterized.Parameters(name = "{index}: {0}, {1}, {2}, {3}")
     public static Collection<Object[]> data() {
         return Arrays.asList(
                 new Object[][] {
 
-                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true},
-                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
-                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true},
-                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
+//                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
+                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
+//                        {"src/test/resources/test1.system", PRED_CART, SEQ_ITP, false},
+//                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true},
+//                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
+//                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true},
+//                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
 
 
                 });
     }
 
-    @Test
     public void test() throws Exception {
         STS sts = null;
         if (filePath.endsWith("aag")) {
@@ -85,8 +104,28 @@ public class RLiveTest {
                 new StsConfigBuilder(domain, refinement, Z3LegacySolverFactory.getInstance())
                         .build(sts);
 
-        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>());
+        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(),true);
 
         Assert.assertEquals(isSafe, x.check().isSafe());
     }
+
+    @Test
+    public void test2() throws Exception {
+        CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+        Expr<BoolType> prop = True();
+
+        var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
+        var pos = cfa.getVars().stream().findFirst().get();
+//        var sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), stsAsMono.getPropExpr());
+        for (var x : acceptingStateIds) {
+            prop = And(prop, Neq(pos.getRef(),Int(x)));
+        }
+        var sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), prop);
+
+        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), true);
+
+        Assert.assertEquals(isSafe, x.check().isSafe());
+    }
+
+
 }

@@ -21,17 +21,21 @@ import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
 import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
+import hu.bme.mit.theta.core.type.anytype.IteExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs;
+import hu.bme.mit.theta.core.type.inttype.IntType;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
+import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.utils.WithPushPop;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
@@ -45,20 +49,31 @@ import java.util.stream.Collectors;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Iff;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
+import static hu.bme.mit.theta.core.type.inttype.IntExprs.*;
 
 public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
     private final TempChecker<?, ?, ?> baseChecker;
-    private final STS monolithicExpr;
+    private STS monolithicExpr;
     private Expr<BoolType> wallStates;
     private Expr<BoolType> c;
-    private Solver solver;
+    private UCSolver solver;
+    private UCSolver UCsolver;
+    private VarDecl<IntType> violated;
 
     public KFairChecker(
             final STS monolithicExpr,
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker) throws Exception {
-        this.monolithicExpr = monolithicExpr;
         this.baseChecker = baseChecker;
-        solver = Z3LegacySolverFactory.getInstance().createSolver();
+        solver = Z3LegacySolverFactory.getInstance().createUCSolver();
+        violated = Decls.Var("violated", Int());
+        var newInit = And(monolithicExpr.getInit(),Eq(violated.getRef(),Int(0)));
+        var newTrans = And(monolithicExpr.getTrans(),
+                Eq(ExprUtils.applyPrimes(violated.getRef(),VarIndexingFactory.indexing(1)),
+                        Add(violated.getRef(),
+                                IteExpr.of(monolithicExpr.getProp(),Int(0),Int(1)))));
+
+        this.monolithicExpr = new STS(newInit, monolithicExpr.getTrans(), monolithicExpr.getProp());
+
     }
 
     @Override
@@ -66,12 +81,13 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         int k = 0;
         c = False();
         wallStates = False();
+        var qK = And(monolithicExpr.getProp(), Geq(violated.getRef(),Int(k)));
 
         while (true) {
             //  ¬q ∧ ¬C is satisfiable
-            var prop = And(Not(monolithicExpr.getProp()), Not(c));
+            var prop = And(Not(qK), Not(c));
             try (WithPushPop wpp = new WithPushPop(solver)) {
-                solver.add(prop);
+                solver.track(prop);
                 if (solver.check().isUnsat()) {
                     return SafetyResult.safe(ARG.create(null));
                 }
@@ -97,7 +113,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             } else {
                 InvariantForRlive invariant = result.asSafe().getProof();
                 var d = invariant.getInvariant();
-                wallStates = And(wallStates, d);
+                wallStates = Or(wallStates, d);
 
                 Expr<BoolType> g = generalizingNoloop(s, d);
                 c = Or(c, g);
@@ -117,15 +133,15 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         Expr<BoolType> g2;
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.add(expr);
+            solver.track(expr);
             assert solver.check().isUnsat();
-            g1 = solver.getModel().toExpr();
+            g1 = And(solver.getUnsatCore());
         }
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.add(And(d,s.toExpr()));
+            solver.track(And(d,s.toExpr()));
             assert solver.check().isUnsat();
-            g2 = solver.getModel().toExpr();
+            g2 = And(solver.getUnsatCore());
         }
 
         return And(g1, g2);
