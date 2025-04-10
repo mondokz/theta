@@ -111,7 +111,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 }
             } else {
                 var invariant = (InvariantForRlive)result.getProof();
-                c = Or(c,invariant.getInvariant());
+                c = Or(c, invariant.getInvariant());
                 return false;
             }
         }
