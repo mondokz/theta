@@ -78,12 +78,11 @@ public class RLiveTest {
                 new Object[][] {
 
 //                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
-                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
-//                        {"src/test/resources/test1.system", PRED_CART, SEQ_ITP, false},
-//                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true},
-//                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false},
-//                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true},
-//                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false},
+//                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
+                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
+                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
+                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
+                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false, List.of()},
 
 
                 });
@@ -110,21 +109,59 @@ public class RLiveTest {
     }
 
     @Test
-    public void test2() throws Exception {
-        CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
-        Expr<BoolType> prop = True();
-
-        var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
-        var pos = cfa.getVars().stream().findFirst().get();
-//        var sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), stsAsMono.getPropExpr());
-        for (var x : acceptingStateIds) {
-            prop = And(prop, Neq(pos.getRef(),Int(x)));
+    public void testKFair() throws Exception {
+        STS sts;
+        if(filePath.endsWith("cfa")) {
+            CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+            Expr<BoolType> prop = True();
+            var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
+            var pos = cfa.getVars().stream().findFirst().get();
+            for (var x : acceptingStateIds) {
+                prop = And(prop, Neq(pos.getRef(),Int(x)));
+            }
+            sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), prop);
+        } else {
+            final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream(filePath));
+            if (spec.getAllSts().size() != 1) {
+                throw new UnsupportedOperationException("STS contains multiple properties.");
+            }
+            sts = Utils.singleElementOf(spec.getAllSts());
         }
-        var sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), prop);
 
-        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), true);
 
-        Assert.assertEquals(isSafe, x.check().isSafe());
+        var rLiveChecker = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), false);
+        var kFairChecker = new KFairChecker<ExplPrec>(sts,new TempChecker<>());
+
+
+        Assert.assertEquals(isSafe, kFairChecker.check().isSafe());
+
+    }
+
+    public void testRlive() throws Exception {
+        STS sts;
+        if(filePath.endsWith("cfa")) {
+            CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
+            Expr<BoolType> prop = True();
+            var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
+            var pos = cfa.getVars().stream().findFirst().get();
+            for (var x : acceptingStateIds) {
+                prop = And(prop, Neq(pos.getRef(),Int(x)));
+            }
+            sts = new STS(stsAsMono.getInitExpr(), stsAsMono.getTransExpr(), prop);
+        } else {
+            final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream(filePath));
+            if (spec.getAllSts().size() != 1) {
+                throw new UnsupportedOperationException("STS contains multiple properties.");
+            }
+            sts = Utils.singleElementOf(spec.getAllSts());
+        }
+
+
+        var rLiveChecker = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), false);
+        var kFairChecker = new KFairChecker<ExplPrec>(sts,new TempChecker<>());
+
+
+        Assert.assertEquals(isSafe, rLiveChecker.check().isSafe());
     }
 
 

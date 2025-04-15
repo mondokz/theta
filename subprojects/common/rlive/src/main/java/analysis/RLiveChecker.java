@@ -32,6 +32,7 @@ import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
+import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.UCSolver;
@@ -122,13 +123,13 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
             var expr = And(s.toExpr(), monolithicExpr.getTrans(), Not(cPrime));
             UCsolver.push();
-            UCsolver.track(expr);
+            UCsolver.track(PathUtils.unfold(expr,0));
             if (UCsolver.check().isSat()){
                 var model = UCsolver.getModel();
-                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime),model.toExpr());
+                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime), model.toExpr());
                 UCsolver.pop();
                 UCsolver.push();
-                UCsolver.track(expr2);
+                UCsolver.track(PathUtils.unfold(expr2,0));
                 if (UCsolver.check().isUnsat()){
                     c = Or(c, And(UCsolver.getUnsatCore()));
                 } else {

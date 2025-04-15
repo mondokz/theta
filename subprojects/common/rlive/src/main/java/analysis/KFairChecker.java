@@ -22,15 +22,19 @@ import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
 import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
+import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
+import hu.bme.mit.theta.core.model.ImmutableValuation;
 import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
+import hu.bme.mit.theta.core.type.LitExpr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.anytype.IteExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs;
 import hu.bme.mit.theta.core.type.inttype.IntType;
+import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
@@ -65,14 +69,14 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker) throws Exception {
         this.baseChecker = baseChecker;
         solver = Z3LegacySolverFactory.getInstance().createUCSolver();
-        violated = Decls.Var("violated", Int());
-        var newInit = And(monolithicExpr.getInit(),Eq(violated.getRef(),Int(0)));
+        violated = Decls.Var("__violated", Int());
+        var newInit = And(monolithicExpr.getInit(), Eq(violated.getRef(),Int(0)));
         var newTrans = And(monolithicExpr.getTrans(),
                 Eq(ExprUtils.applyPrimes(violated.getRef(),VarIndexingFactory.indexing(1)),
                         Add(violated.getRef(),
                                 IteExpr.of(monolithicExpr.getProp(),Int(0),Int(1)))));
 
-        this.monolithicExpr = new STS(newInit, monolithicExpr.getTrans(), monolithicExpr.getProp());
+        this.monolithicExpr = new STS(newInit, newTrans, monolithicExpr.getProp());
 
     }
 
@@ -81,13 +85,15 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         int k = 0;
         c = False();
         wallStates = False();
-        var qK = And(monolithicExpr.getProp(), Geq(violated.getRef(),Int(k)));
+        // k+ times violated
+        var kViol = Geq(violated.getRef(), Int(k)));
 
         while (true) {
             //  ¬q ∧ ¬C is satisfiable
-            var prop = And(Not(qK), Not(c));
+            var target = And(kViol, Not(c));
+            var prop = Not(target);
             try (WithPushPop wpp = new WithPushPop(solver)) {
-                solver.track(prop);
+                solver.track(PathUtils.unfold(prop, 0));
                 if (solver.check().isUnsat()) {
                     return SafetyResult.safe(ARG.create(null));
                 }
@@ -133,13 +139,13 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         Expr<BoolType> g2;
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.track(expr);
+            solver.track(PathUtils.unfold(expr, 0));
             assert solver.check().isUnsat();
             g1 = And(solver.getUnsatCore());
         }
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.track(And(d,s.toExpr()));
+            solver.track(PathUtils.unfold(And(d,s.toExpr()), 0));
             assert solver.check().isUnsat();
             g2 = And(solver.getUnsatCore());
         }
@@ -177,8 +183,14 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     }
 
     private Valuation extractLastState(SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result) {
-        Trace<Valuation, StsAction> trace = result.asUnsafe().getCex();
-        return trace.getStates().get(trace.getStates().size() - 1);
+        Trace<Valuation, StsAction> trace =  result.asUnsafe().getCex();
+        Valuation val = trace.getStates().get(trace.getStates().size() - 1);
+
+        Map<Decl<?>, LitExpr<?>> filteredMap = val.toMap().entrySet().stream()
+//                .filter(entry -> !entry.getKey().getName().contains("__violated"))
+                .filter(entry -> !entry.getKey().getName().contains("_temp"))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return ImmutableValuation.from(filteredMap);
     }
 
     private SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> checkReachability(STS sts) {
