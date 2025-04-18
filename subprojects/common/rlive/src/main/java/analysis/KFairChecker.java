@@ -86,7 +86,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         c = False();
         wallStates = False();
         // k+ times violated
-        var kViol = Geq(violated.getRef(), Int(k)));
+        var kViol = Geq(violated.getRef(), Int(k));
 
         while (true) {
             //  ¬q ∧ ¬C is satisfiable
