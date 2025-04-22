@@ -99,7 +99,9 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         while(true){
 
             if (pruneEnabled){
-                return pruneDead(s);
+                if (pruneDead(s)){
+                    return false;
+                }
             }
 
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
