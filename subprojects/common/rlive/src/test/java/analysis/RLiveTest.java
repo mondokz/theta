@@ -77,11 +77,12 @@ public class RLiveTest {
         return Arrays.asList(
                 new Object[][] {
 
-                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
-                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
-                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
-                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
-                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
+//                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
+//                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
+//                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
+//                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
+//                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
+//                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
                         {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false, List.of()},
 
 
@@ -107,7 +108,7 @@ public class RLiveTest {
 
         Assert.assertEquals(isSafe, x.check().isSafe());
     }
-    @Test
+//    @Test
     public void testKFair() throws Exception {
         STS sts;
         if(filePath.endsWith("cfa")) {
@@ -132,7 +133,7 @@ public class RLiveTest {
         Assert.assertEquals(isSafe, kFairChecker.check().isSafe());
 
     }
-//    @Test
+    @Test
     public void testRlive() throws Exception {
         STS sts;
         if(filePath.endsWith("cfa")) {

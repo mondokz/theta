@@ -128,7 +128,8 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             UCsolver.track(PathUtils.unfold(expr,0));
             if (UCsolver.check().isSat()){
                 var model = UCsolver.getModel();
-                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime), model.toExpr());
+                var l = PathUtils.unfold(PathUtils.extractValuation(model,1).toExpr(), VarIndexingFactory.indexing(0));
+                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime), l);
                 UCsolver.pop();
                 UCsolver.push();
                 UCsolver.track(PathUtils.unfold(expr2,0));

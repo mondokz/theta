@@ -74,7 +74,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         var newTrans = And(monolithicExpr.getTrans(),
                 Eq(ExprUtils.applyPrimes(violated.getRef(),VarIndexingFactory.indexing(1)),
                         Add(violated.getRef(),
-                                IteExpr.of(monolithicExpr.getProp(),Int(0),Int(1)))));
+                                IteExpr.of(ExprUtils.applyPrimes(monolithicExpr.getProp(), VarIndexingFactory.indexing(1)),Int(0),Int(1)))));
 
         this.monolithicExpr = new STS(newInit, newTrans, monolithicExpr.getProp());
 
@@ -85,10 +85,12 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         int k = 0;
         c = False();
         wallStates = False();
-        // k+ times violated
-        var kViol = Gt(violated.getRef(), Int(k));
+
 
         while (true) {
+            // k+ times violated
+            var kViol = Gt(violated.getRef(), Int(k));
+
             //  ¬q ∧ ¬C is satisfiable
             var target = And(kViol, Not(c));
             var prop = Not(target);
@@ -187,7 +189,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         Valuation val = trace.getStates().get(trace.getStates().size() - 1);
 
         Map<Decl<?>, LitExpr<?>> filteredMap = val.toMap().entrySet().stream()
-//                .filter(entry -> !entry.getKey().getName().contains("__violated"))
+                .filter(entry -> !entry.getKey().getName().contains("__violated"))
                 .filter(entry -> !entry.getKey().getName().contains("_temp"))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         return ImmutableValuation.from(filteredMap);
