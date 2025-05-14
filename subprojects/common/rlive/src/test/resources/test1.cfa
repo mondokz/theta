@@ -1,5 +1,4 @@
 main process cfa {
-    var position : int
 
     init loc L0
     loc L1
@@ -17,20 +16,20 @@ main process cfa {
 
 
 
-    L0 -> L1 { position := 1 }
-    L0 -> L6 { position := 6 }
+    L0 -> L1 { }
+    L0 -> L6 { }
 
 
-    L1 -> L2 { position := 2 }
-    L2 -> L3 { position := 3 }
-    L3 -> L4 { position := 4 }
-    L4 -> L5 { position := 5 }
-    L5 -> L3 { position := 3 }
+    L1 -> L2 { }
+    L2 -> L3 { }
+    L3 -> L4 { }
+    L4 -> L5 { }
+    L5 -> L3 { }
 
-    L6 -> L7 { position := 7 }
-    L7 -> L8 { position := 8 }
-    L8 -> L9 { position := 9 }
-    L9 -> L10 { position := 10 }
-    L10 -> L8 { position := 8 }
+    L6 -> L7 { }
+    L7 -> L8 { }
+    L8 -> L9 { }
+    L9 -> L10 { }
+    L10 -> L8 { }
 
 }

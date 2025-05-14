@@ -135,10 +135,12 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 UCsolver.track(PathUtils.unfold(expr2,0));
                 if (UCsolver.check().isUnsat()){
                     c = Or(c, And(UCsolver.getUnsatCore()));
+                    UCsolver.pop();
                 } else {
+                    UCsolver.pop();
                     return false;
                 }
-                UCsolver.pop();
+
             } else if (UCsolver.check().isUnsat()) {
                 UCsolver.pop();
                 return true;

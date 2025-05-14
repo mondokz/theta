@@ -77,12 +77,12 @@ public class RLiveTest {
         return Arrays.asList(
                 new Object[][] {
 
-//                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
-//                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
-//                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
-//                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
-//                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
-//                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
+                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
+                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
+                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
+                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
+                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
+                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
                         {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false, List.of()},
 
 
@@ -140,7 +140,7 @@ public class RLiveTest {
             CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
             Expr<BoolType> prop = True();
             var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
-            var pos = cfa.getVars().stream().findFirst().get();
+            var pos = stsAsMono.getVars().stream().findFirst().get();
             for (var x : acceptingStateIds) {
                 prop = And(prop, Neq(pos.getRef(),Int(x)));
             }
