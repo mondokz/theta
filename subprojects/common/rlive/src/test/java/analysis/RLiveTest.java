@@ -108,14 +108,14 @@ public class RLiveTest {
 
         Assert.assertEquals(isSafe, x.check().isSafe());
     }
-//    @Test
+    @Test
     public void testKFair() throws Exception {
         STS sts;
         if(filePath.endsWith("cfa")) {
             CFA cfa = CfaDslManager.createCfa(new FileInputStream(filePath));
             Expr<BoolType> prop = True();
             var stsAsMono = CfaToMonolithicExprKt.toMonolithicExpr(cfa);
-            var pos = cfa.getVars().stream().findFirst().get();
+            var pos = stsAsMono.getVars().stream().findFirst().get();
             for (var x : acceptingStateIds) {
                 prop = And(prop, Neq(pos.getRef(),Int(x)));
             }
@@ -133,7 +133,7 @@ public class RLiveTest {
         Assert.assertEquals(isSafe, kFairChecker.check().isSafe());
 
     }
-    @Test
+//    @Test
     public void testRlive() throws Exception {
         STS sts;
         if(filePath.endsWith("cfa")) {

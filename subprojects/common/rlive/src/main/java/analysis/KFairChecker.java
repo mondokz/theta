@@ -131,25 +131,37 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     }
 
     private Expr<BoolType> generalizingNoloop(Valuation s, Expr<BoolType> d) {
-        Expr<BoolType> expr = And(
-                                            And(
-                                                monolithicExpr.getTrans(),
-                                                Not(ExprUtils.applyPrimes(d, VarIndexingFactory.indexing(1)))),
-                                            s.toExpr());
+
+        var tUnfold = PathUtils.unfold(monolithicExpr.getTrans(), 0);
+        var notdUnfold = PathUtils.unfold(Not(ExprUtils.applyPrimes(d, VarIndexingFactory.indexing(1))), 0);
+        var sUnfold = PathUtils.unfold(s.toExpr(), 0);
+        var dUnfold = PathUtils.unfold(d, 0);
 
         Expr<BoolType> g1;
         Expr<BoolType> g2;
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.track(PathUtils.unfold(expr, 0));
+
+            solver.track(tUnfold);
+            solver.track(notdUnfold);
+            solver.track(sUnfold);
+
             assert solver.check().isUnsat();
-            g1 = And(solver.getUnsatCore());
+            var uc = new ArrayList<>(solver.getUnsatCore());
+            uc.remove(tUnfold);
+            uc.remove(notdUnfold);
+            g1 = PathUtils.foldin(And(uc),0);
         }
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-            solver.track(PathUtils.unfold(And(d,s.toExpr()), 0));
+
+            solver.track(dUnfold);
+            solver.track(sUnfold);
+
             assert solver.check().isUnsat();
-            g2 = And(solver.getUnsatCore());
+            var uc = new ArrayList<>(solver.getUnsatCore());
+            uc.remove(dUnfold);
+            g2 = PathUtils.foldin(And(uc),0);
         }
 
         return And(g1, g2);

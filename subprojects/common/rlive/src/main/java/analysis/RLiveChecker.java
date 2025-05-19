@@ -29,6 +29,7 @@ import hu.bme.mit.theta.core.model.Valuation;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.LitExpr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
+import hu.bme.mit.theta.core.type.booltype.AndExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
@@ -129,12 +130,25 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             if (UCsolver.check().isSat()){
                 var model = UCsolver.getModel();
                 var l = PathUtils.unfold(PathUtils.extractValuation(model,1).toExpr(), VarIndexingFactory.indexing(0));
-                var expr2 = And(monolithicExpr.getTrans(), Not(cPrime), l);
                 UCsolver.pop();
                 UCsolver.push();
-                UCsolver.track(PathUtils.unfold(expr2,0));
+                var tUnfold = PathUtils.unfold(monolithicExpr.getTrans(), 0);
+                UCsolver.track(tUnfold);
+                var notCUnfold = PathUtils.unfold(Not(cPrime), 0);
+                UCsolver.track(notCUnfold);
+                if(l instanceof AndExpr land) {
+                    for(Expr<BoolType> op : land.getOps()){
+                        UCsolver.track(op);
+                    }
+                } else {
+                    UCsolver.track(l);
+                }
+
                 if (UCsolver.check().isUnsat()){
-                    c = Or(c, And(UCsolver.getUnsatCore()));
+                    var uc = new ArrayList<>(UCsolver.getUnsatCore());
+                    uc.remove(tUnfold);
+                    uc.remove(notCUnfold);
+                    c = Or(c, PathUtils.foldin(And(uc), 0));
                     UCsolver.pop();
                 } else {
                     UCsolver.pop();
