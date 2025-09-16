@@ -1,0 +1,15 @@
+specification asd {
+  property safe: {
+    var x: int
+    var y: int
+
+    invariant x >= 0 and y >= 0 and y <= 1
+    initial y = 0 and x >= 0
+
+    transition
+      (y = 0 and x > 0 and y' = 0 and x' = x - 1) or
+      (y = 0 and x = 0 and y' = 1 and x' = x) or
+      (y = 1 and y' = 1 and x' = x)
+  } models G (x >= 0)
+}
+

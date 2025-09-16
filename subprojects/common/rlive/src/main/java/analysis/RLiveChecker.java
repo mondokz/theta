@@ -20,7 +20,6 @@ import hu.bme.mit.theta.analysis.*;
 import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
-import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -31,11 +30,9 @@ import hu.bme.mit.theta.core.type.LitExpr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.booltype.AndExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
-import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
-import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
@@ -50,29 +47,27 @@ import static hu.bme.mit.theta.core.type.booltype.BoolExprs.False;
 import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
 
 public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
-    private final TempChecker<?,?,?> baseChecker;
+    private final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker;
     private final STS monolithicExpr;
-    private Set<Valuation> reachableQStates;
-    Expr<BoolType> c;
-    boolean cModified;
+    private Expr<BoolType> c;
     final boolean pruneEnabled;
-    private UCSolver UCsolver;
+    private final UCSolver ucSolver;
 
     public RLiveChecker(
             final STS monolithicExpr,
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
-            final boolean pruneEnabled) throws Exception {
+            final boolean pruneEnabled) {
         this.pruneEnabled = pruneEnabled;
-        this.monolithicExpr = monolithicExpr;
-        this.baseChecker = baseChecker;
-        this.reachableQStates = new HashSet<>();
-        UCsolver = Z3LegacySolverFactory.getInstance().createUCSolver();
+        this.monolithicExpr = Objects.requireNonNull(monolithicExpr);
+        this.baseChecker = Objects.requireNonNull(baseChecker);
+        this.c = False();
+        this.ucSolver = Z3LegacySolverFactory.getInstance().createUCSolver();
     }
 
-    public SafetyResult<Proof, Cex> check(P input) {
-        cModified = false;
-        c = False();
 
+    @Override
+    public SafetyResult<Proof, Cex> check(final P input) {
+        c = False();
         while (true) {
 
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), monolithicExpr.getInit());
@@ -80,10 +75,10 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
             if (result.isUnsafe()) {
                 Valuation s = extractReachedNotQState(result);
-                Set<Valuation> reachableQStatesFromS = new HashSet<>();
-                if(searchCex(s,reachableQStatesFromS)){
-                    return SafetyResult.unsafe(result.asUnsafe().getCex(),result.asUnsafe().getProof());
-                };
+                Set<Valuation> visited = new HashSet<>();
+                if (searchCex(s, visited)) {
+                    return SafetyResult.unsafe(result.asUnsafe().getCex(), result.asUnsafe().getProof());
+                }
             } else {
                 return SafetyResult.safe(result.asSafe().getProof());
             }
@@ -91,16 +86,16 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         }
     }
 
-    private boolean searchCex(Valuation s, Set<Valuation> reachableQStates) {
-        if(reachableQStates.contains(s)) {
+    private boolean searchCex(final Valuation s, final Set<Valuation> visited) {
+        if (visited.contains(s)) {
             return true;
         } else {
-            reachableQStates.add(s);
+            visited.add(s);
         }
-        while(true){
+        while (true) {
 
-            if (pruneEnabled){
-                if (pruneDead(s)){
+            if (pruneEnabled) {
+                if (pruneDead(s)) {
                     return false;
                 }
             }
@@ -108,55 +103,56 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);;
 
-            if(result.isUnsafe()){
+            if (result.isUnsafe()) {
                 Valuation t = extractReachedNotQState(result);
-                if (searchCex(t,reachableQStates)){
+                if (searchCex(t, visited)) {
                     return true;
                 }
             } else {
-                var invariant = (InvariantForRlive)result.getProof();
+                var invariant = result.getProof();
                 c = Or(c, invariant.getInvariant());
                 return false;
             }
         }
     }
 
-    private boolean pruneDead(Valuation s) {
-        while (true){
+    private boolean pruneDead(final Valuation s) {
+        while (true) {
             var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
             var expr = And(s.toExpr(), monolithicExpr.getTrans(), Not(cPrime));
-            UCsolver.push();
-            UCsolver.track(PathUtils.unfold(expr,0));
-            if (UCsolver.check().isSat()){
-                var model = UCsolver.getModel();
-                var l = PathUtils.unfold(PathUtils.extractValuation(model,1).toExpr(), VarIndexingFactory.indexing(0));
-                UCsolver.pop();
-                UCsolver.push();
+            ucSolver.push();
+            ucSolver.track(PathUtils.unfold(expr, 0));
+            var status = ucSolver.check(); // avoid duplicate solver calls
+            if (status.isSat()) {
+                var model = ucSolver.getModel();
+                var l = PathUtils.unfold(PathUtils.extractValuation(model, 1).toExpr(), VarIndexingFactory.indexing(0));
+                ucSolver.pop();
+                ucSolver.push();
                 var tUnfold = PathUtils.unfold(monolithicExpr.getTrans(), 0);
-                UCsolver.track(tUnfold);
+                ucSolver.track(tUnfold);
                 var notCUnfold = PathUtils.unfold(Not(cPrime), 0);
-                UCsolver.track(notCUnfold);
-                if(l instanceof AndExpr land) {
-                    for(Expr<BoolType> op : land.getOps()){
-                        UCsolver.track(op);
+                ucSolver.track(notCUnfold);
+                if (l instanceof AndExpr land) {
+                    for (Expr<BoolType> op : land.getOps()) {
+                        ucSolver.track(op);
                     }
                 } else {
-                    UCsolver.track(l);
+                    ucSolver.track(l);
                 }
-
-                if (UCsolver.check().isUnsat()){
-                    var uc = new ArrayList<>(UCsolver.getUnsatCore());
+                var status2 = ucSolver.check();
+                if (status2.isUnsat()) {
+                    var uc = new ArrayList<>(ucSolver.getUnsatCore());
                     uc.remove(tUnfold);
                     uc.remove(notCUnfold);
                     c = Or(c, PathUtils.foldin(And(uc), 0));
-                    UCsolver.pop();
+                    ucSolver.pop();
+                    // continue to attempt more pruning
                 } else {
-                    UCsolver.pop();
+                    ucSolver.pop();
                     return false;
                 }
-
-            } else if (UCsolver.check().isUnsat()) {
-                UCsolver.pop();
+            } else if (status.isUnsat()) {
+                ucSolver.pop();
                 return true;
             }
 
