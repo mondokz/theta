@@ -21,4 +21,5 @@ plugins {
 dependencies {
     implementation(project(":theta-common"))
     implementation(project(":theta-core"))
+    implementation(project(":theta-solver-smtlib"))
 }

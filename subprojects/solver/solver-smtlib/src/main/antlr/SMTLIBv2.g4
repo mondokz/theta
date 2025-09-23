@@ -124,6 +124,18 @@ get_interpolants_response_smtinterpol
     : ParOpen term* ParClose
     ;
 
+fun_definition
+    : ParOpen CMD_DefineFun function_def ParClose
+    ;
+
+const_declaration
+    : ParOpen CMD_DeclareConst identifier sort ParClose
+    ;
+
+vmt_specification
+    : ( const_declaration | fun_definition )*
+    ;
+
 // Parser Rules End
 
 // Parser Rules Start
@@ -200,6 +212,13 @@ predefKeyword
     | PK_Values
     | PK_Verbosity
     | PK_Version
+    | PK_Next
+    | PK_Init
+    | PK_Trans
+    | PK_InvarProperty
+    | PK_LiveProperty
+    | PK_Invar
+    | PK_LtlProperty
     ;
 
 symbol
@@ -791,6 +810,29 @@ PK_Verbosity
     ;
 PK_Version
     : ':version'
+    ;
+
+//vmt
+PK_Next
+    : ':next'
+    ;
+PK_Init
+    : ':init'
+    ;
+PK_Trans
+    : ':trans'
+    ;
+PK_InvarProperty
+    : ':invar-property'
+    ;
+PK_LiveProperty
+    : ':live-property'
+    ;
+PK_Invar
+    : ':invar'
+    ;
+PK_LtlProperty
+    : ':ltl-property'
     ;
 
 UndefinedSymbol:
