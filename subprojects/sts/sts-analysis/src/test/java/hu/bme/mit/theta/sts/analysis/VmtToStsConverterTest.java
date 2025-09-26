@@ -13,11 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package hu.bme.mit.theta.sts.vmt;
+package hu.bme.mit.theta.sts.analysis;
 
 import static org.junit.Assert.assertTrue;
 
 import hu.bme.mit.theta.sts.STS;
+import hu.bme.mit.theta.sts.vmt.VmtToStsConverter;
 import org.junit.Test;
 
 public class VmtToStsConverterTest {
