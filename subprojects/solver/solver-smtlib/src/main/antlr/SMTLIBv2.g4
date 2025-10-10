@@ -130,10 +130,19 @@ fun_definition
 
 const_declaration
     : ParOpen CMD_DeclareConst identifier sort ParClose
+    | ParOpen CMD_DeclareFun identifier ParOpen ParClose sort ParClose
+    ;
+
+set_info
+    : ParOpen CMD_SetInfo attribute ParClose
+    ;
+
+assert_statement
+    : ParOpen CMD_Assert term ParClose
     ;
 
 vmt_specification
-    : ( const_declaration | fun_definition )*
+    : ( const_declaration | fun_definition | set_info | assert_statement )*
     ;
 
 // Parser Rules End

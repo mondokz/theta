@@ -18,6 +18,8 @@ package hu.bme.mit.theta.sts;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprUtils;
+import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Or;
 
 /** Utilities related to the STS formalism. */
 public final class StsUtils {
@@ -50,6 +52,19 @@ public final class StsUtils {
         builder.addInit(transformIfNonCNF(sts.getInit()));
         builder.addTrans(transformIfNonCNF(sts.getTrans()));
         builder.setProp(sts.getProp());
+        return builder.build();
+    }
+
+    public static STS transformInvariantToLiveness(final STS sts) {
+        final STS.Builder builder = STS.builder();
+
+        builder.addInit(sts.getInit());
+        builder.setProp(sts.getProp());
+
+        Expr<BoolType> initPrimed = ExprUtils.applyPrimes(sts.getInit(), VarIndexingFactory.indexing(1));
+        Expr<BoolType> newTrans = Or(sts.getTrans(), initPrimed);
+
+        builder.addTrans(newTrans);
         return builder.build();
     }
 

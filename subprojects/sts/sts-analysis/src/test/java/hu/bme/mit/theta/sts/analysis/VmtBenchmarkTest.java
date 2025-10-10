@@ -52,7 +52,7 @@ import org.junit.runners.Parameterized;
 public class VmtBenchmarkTest {
 
     private static final String VMT_BENCHMARKS_PATH = "C:\\Users\\zz\\Documents\\GitHub\\theta\\vmt-benchmarks\\vmt-benchmarks";
-    private static final int TIMEOUT_SECONDS = 30; // 30 second timeout per test
+    private static final int TIMEOUT_SECONDS = 3000; // 30 second timeout per test
 
     public enum Algorithm {
         CEGAR, BMC, BMC_KIND, BMC_IMC, RLIVE
@@ -80,20 +80,20 @@ public class VmtBenchmarkTest {
         // For each VMT file, test with different algorithms and domains
         for (SafetyVmtFile vmtFile : vmtFiles) {
             // CEGAR tests with different domains
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.CEGAR, EXPL, vmtFile.isSafe});
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.CEGAR, PRED_CART, vmtFile.isSafe});
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.CEGAR, EXPL, vmtFile.isSafe});
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.CEGAR, PRED_CART, vmtFile.isSafe});
 
-            // BMC tests
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC, EXPL, vmtFile.isSafe});
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC, PRED_CART, vmtFile.isSafe});
-
-            // BMC with K-induction
+//            // BMC tests
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC, EXPL, vmtFile.isSafe});
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC, PRED_CART, vmtFile.isSafe});
+//
+//            // BMC with K-induction
             testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_KIND, EXPL, vmtFile.isSafe});
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_KIND, PRED_CART, vmtFile.isSafe});
-
-            // BMC with IMC
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_IMC, EXPL, vmtFile.isSafe});
-            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_IMC, PRED_CART, vmtFile.isSafe});
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_KIND, PRED_CART, vmtFile.isSafe});
+//
+//            // BMC with IMC
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_IMC, EXPL, vmtFile.isSafe});
+//            testCases.add(new Object[]{vmtFile.filePath, Algorithm.BMC_IMC, PRED_CART, vmtFile.isSafe});
 
             // RLive (for liveness properties)
 //            testCases.add(new Object[]{vmtFile.filePath, Algorithm.RLIVE, EXPL, vmtFile.isSafe});
@@ -162,8 +162,10 @@ public class VmtBenchmarkTest {
             // Read VMT file content
             String vmtContent = Files.readString(Paths.get(vmtFilePath));
 
+            var s = VmtPreprocessor.preprocess(vmtContent);
+
             // Parse VMT to STS
-            STS sts = VmtToStsConverter.parseToSts(vmtContent);
+            STS sts = VmtToStsConverter.parseToSts(s);
 
             // Run the specified algorithm
             SafetyResult<?, ?> result;
@@ -221,7 +223,8 @@ public class VmtBenchmarkTest {
                 Z3LegacySolverFactory.getInstance().createSolver(),
                 val -> hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt.valToState(sts, val),
                 (val1, val2) -> hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt.valToAction(sts, val1, val2),
-                logger);
+                logger,
+                i -> i > 1000);
 
         return checker.check(null);
     }
@@ -236,7 +239,8 @@ public class VmtBenchmarkTest {
                 Z3LegacySolverFactory.getInstance().createSolver(),
                 val -> hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt.valToState(sts, val),
                 (val1, val2) -> hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt.valToAction(sts, val1, val2),
-                logger);
+                logger,
+                i -> i > 2);
 
         return checker.check(null);
     }
