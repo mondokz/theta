@@ -15,6 +15,7 @@
  */
 package hu.bme.mit.theta.sts.aiger.elements;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,10 +27,25 @@ public class AigerSystem {
 
     private final List<AigerNode> nodes;
     private final OutputVar output;
+    private final List<JusticeProperty> justiceProperties;
+    private final List<Integer> constraints;
+    private final List<Integer> fairness;
 
-    public AigerSystem(final List<AigerNode> nodes, final OutputVar output) {
+    public AigerSystem(final List<AigerNode> nodes, final OutputVar output, List<Integer> constraints, List<Integer> fairness) {
         this.nodes = nodes;
         this.output = output;
+        this.constraints = constraints;
+        this.fairness = fairness;
+        this.justiceProperties = Collections.emptyList();
+    }
+
+    public AigerSystem(final List<AigerNode> nodes, final OutputVar output,
+                       final List<JusticeProperty> justiceProperties, List<Integer> constraints, List<Integer> fairness) {
+        this.nodes = nodes;
+        this.output = output;
+        this.justiceProperties = justiceProperties;
+        this.constraints = constraints;
+        this.fairness = fairness;
     }
 
     public List<AigerNode> getNodes() {
@@ -38,5 +54,17 @@ public class AigerSystem {
 
     public OutputVar getOutput() {
         return output;
+    }
+
+    public List<JusticeProperty> getJusticeProperties() {
+        return justiceProperties;
+    }
+
+    public List<Integer> getConstraints() {
+        return constraints;
+    }
+
+    public List<Integer> getFairness() {
+        return fairness;
     }
 }

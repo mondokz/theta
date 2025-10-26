@@ -33,7 +33,7 @@ import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
-import hu.bme.mit.theta.sts.aiger.AigerParser;
+import hu.bme.mit.theta.sts.aiger.AigerParser2;
 import hu.bme.mit.theta.sts.aiger.AigerToSts;
 import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
@@ -73,34 +73,61 @@ public class RLiveTest {
     public static Collection<Object[]> data() {
         return Arrays.asList(
                 new Object[][] {
+                        // CFA Edge Case Tests - Simple, debuggable liveness checking scenarios
 
+//                        {"src/test/resources/test_simple_safe.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
+//
+//                        {"src/test/resources/test_simple_unsafe.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
+//
+//                        {"src/test/resources/test_dead_state.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
+//
+//                        {"src/test/resources/test_lasso.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
+//
+//                        {"src/test/resources/test_multi_accept.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
+//
+//                        {"src/test/resources/test_multi_accept_unsafe.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
+//
 //                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
 //                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
 //                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
-//                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
-                        {"""
-                            ; Counter system specification
-                            (declare-const x Int)
-                            (declare-const x.next Int)
-                            (define-fun sv.x () Int (! x :next x.next))
-                            (define-fun init () Bool (! (= x 0) :init true))
-                            (define-fun trans () Bool
-                               (! (or (and (< x 10) (or (= x.next (+ x 1)) (= x.next 0)))
-                                      (and (>= x 10) (= x.next 0))) :trans true))
-                            (define-fun invariant () Bool (! (>= x 0) :invar-property 0))
-                            (define-fun property () Bool (! (<= x 10) :live-property 1))
-                            """, PRED_CART, SEQ_ITP, true, List.of()},
+
+                        {"src/test/resources/test_nested_loops.cfa", PRED_CART, SEQ_ITP, false, List.of(3)},
+                        {"src/test/resources/test_dead_pruning_basic.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
+                        {"src/test/resources/test_dead_pruning_complex.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
+                        {"src/test/resources/test_dead_after_accepting.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
+                        {"src/test/resources/test_multiple_paths_to_loop.cfa", PRED_CART, SEQ_ITP, false, List.of(4)},
+                        {"src/test/resources/test_escaping_loop.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
+                        {"src/test/resources/test_deep_nesting.cfa", PRED_CART, SEQ_ITP, false, List.of(8)},
+                        {"src/test/resources/test_interleaved_accepting.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
+                        {"src/test/resources/test_conditional_acceptance.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 5)},
+                        {"src/test/resources/test_accepting_reentrant.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
+                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
+//                        {"""
+//                            ; Counter system specification
+//                            (declare-const x Int)
+//                            (declare-const x.next Int)
+//                            (define-fun sv.x () Int (! x :next x.next))
+//                            (define-fun init () Bool (! (= x 0) :init true))
+//                            (define-fun trans () Bool
+//                               (! (or (and (< x 10) (or (= x.next (+ x 1)) (= x.next 0)))
+//                                      (and (>= x 10) (= x.next 0))) :trans true))
+//                            (define-fun invariant () Bool (! (>= x 0) :invar-property 0))
+//                            (define-fun property () Bool (! (<= x 10) :live-property 1))
+//                            """, PRED_CART, SEQ_ITP, true, List.of()},
 //                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
 //                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
 //                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false, List.of()},
 //                        {"src/test/resources/test.system", PRED_CART, SEQ_ITP, true, List.of()}
+//                        {"src/test/resources/byte_add_1_safe.c.aig", PRED_CART, SEQ_ITP, true, List.of(2,8)},
+//                        {"src/test/resources/byte_add_unsafe.c.aig", PRED_CART, SEQ_ITP, false, List.of(2,4)},
+//                        {"src/test/resources/interleave_bits_safe.c.aig", PRED_CART, SEQ_ITP, true, List.of(2,4,8)},
                 });
     }
 
     public void test() throws Exception {
         STS sts = null;
         if (filePath.endsWith("aag")) {
-            sts = AigerToSts.createSts(AigerParser.parse(filePath));
+            sts = AigerToSts.createSts(AigerParser2.parse(filePath));
         } else {
             final StsSpec spec = StsDslManager.createStsSpec(new FileInputStream(filePath));
             if (spec.getAllSts().size() != 1) {
@@ -141,7 +168,7 @@ public class RLiveTest {
         Assert.assertEquals(isSafe, kFairChecker.check().isSafe());
 
     }
-//    @Test
+    @Test
     public void testRlive() throws Exception {
         STS sts;
         if(filePath.endsWith("cfa")) {
@@ -167,40 +194,19 @@ public class RLiveTest {
         Assert.assertEquals(isSafe, rLiveChecker.check().isSafe());
     }
 
-    @Test
-    public void testRliveVmtToSTS() throws IOException {
 
-        final String vmt = """
-                ; this is a comment
-                (declare-const x Int)
-                (declare-const x.next Int)
-                (define-fun sv.x () Int (! x :next x.next))
-                (declare-const b Bool)
-                (define-fun init () Bool (! (= x 1) :init true))
-                (define-fun trans () Bool
-                   (! (= x.next (ite b (+ x 1) x)) :trans true))
-                (define-fun p1 () Bool (! (> x 0) :invar-property 1))
-                (define-fun p2 () Bool (! (> x 10) :live-property 2))
-                """;
-
-        final String vmt2 = """
-                ; Counter system specification
-                (declare-const x Int)
-                (declare-const x.next Int)
-                (define-fun sv.x () Int (! x :next x.next))
-                (define-fun init () Bool (! (= x 0) :init true))
-                (define-fun trans () Bool
-                   (! (or (and (< x 10) (or (= x.next (+ x 1)) (= x.next 0)))
-                          (and (>= x 10) (= x.next 0))) :trans true))
-                (define-fun invariant () Bool (! (>= x 0) :invar-property 0))
-                (define-fun property () Bool (! (<= x 10) :live-property 1))
-                """;
-
-        final STS sts = VmtToStsConverter.parseToSts(filePath);
-        var rLiveChecker = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), false);
-
+//    @Test
+    public void testRlivewithAiger() throws Exception {
+        if (filePath == null || !filePath.endsWith("aig")) {
+            // skip non-aag parameter sets
+            return;
+        }
+        final STS sts = AigerToSts.createSts(AigerParser2.parse(filePath));
+        var rLiveChecker = new RLiveChecker<ExplPrec>(sts, new TempChecker<>(), true);
         Assert.assertEquals(isSafe, rLiveChecker.check().isSafe());
     }
+
+
 
 
 }

@@ -19,6 +19,7 @@ import static hu.bme.mit.theta.core.type.booltype.BoolExprs.And;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Bool;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Iff;
 import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Not;
+import static hu.bme.mit.theta.core.type.booltype.BoolExprs.Or;
 
 import hu.bme.mit.theta.common.container.Containers;
 import hu.bme.mit.theta.core.decl.Decls;
@@ -35,9 +36,12 @@ import hu.bme.mit.theta.sts.aiger.elements.AndGate;
 import hu.bme.mit.theta.sts.aiger.elements.FalseConst;
 import hu.bme.mit.theta.sts.aiger.elements.InputVar;
 import hu.bme.mit.theta.sts.aiger.elements.Latch;
+import hu.bme.mit.theta.sts.aiger.elements.JusticeProperty;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-/** A converter from out internal AIGER representation to STSs. */
+/** A converter from our internal AIGER representation to STSs. */
 public final class AigerToSts {
 
     private AigerToSts() {}
@@ -75,6 +79,54 @@ public final class AigerToSts {
         } else {
             builder.setProp(vars.get(outputWire.getSource()).getRef());
         }
+        return builder.build();
+    }
+
+    public static STS createLivenessSts(final AigerSystem aigerSys, final int justiceIndex) {
+        final Builder builder = STS.builder();
+
+        final Map<AigerNode, VarDecl<BoolType>> vars = Containers.createMap();
+        aigerSys.getNodes().forEach(n -> vars.put(n, Decls.Var(n.getName(), Bool())));
+
+        for (final AigerNode node : aigerSys.getNodes()) {
+            if (node instanceof InputVar) {
+                // Do nothing
+            } else if (node instanceof FalseConst) {
+                transformFalseConst(builder, vars, (FalseConst) node);
+            } else if (node instanceof Latch) {
+                transformLatch(builder, vars, (Latch) node);
+            } else if (node instanceof AndGate) {
+                transformAndGate(builder, vars, (AndGate) node);
+            }
+        }
+
+        // Add invariant constraints
+        if (aigerSys.getConstraints() != null) {
+            for (final Integer literal : aigerSys.getConstraints()) {
+                final int varId = literal / 2;
+                final boolean negated = (literal % 2) == 1;
+                final AigerNode node = aigerSys.getNodes().get(varId);
+                final Expr<BoolType> expr = vars.get(node).getRef();
+                builder.addInvar(negated ? Not(expr) : expr);
+            }
+        }
+
+        final JusticeProperty justice = aigerSys.getJusticeProperties().get(justiceIndex);
+        final List<Expr<BoolType>> fairnessExprs = new ArrayList<>();
+
+
+        for (final Integer literal : justice.getFairnessConstraints()) {
+            final int varId = literal / 2;
+            final boolean negated = (literal % 2) == 1;
+            final AigerNode node = aigerSys.getNodes().get(varId);
+            final Expr<BoolType> expr = vars.get(node).getRef();
+            final Expr<BoolType> fairnessExpr = negated ? Not(expr) : expr ;
+            fairnessExprs.add(fairnessExpr);
+        }
+        if (fairnessExprs.size() > 1 ) {
+            throw new IllegalStateException("More than one fairness expression found");
+        }
+        builder.setProp(fairnessExprs.get(0));
         return builder.build();
     }
 
