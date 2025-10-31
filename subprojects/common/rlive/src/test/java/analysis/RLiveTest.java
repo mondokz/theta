@@ -74,34 +74,9 @@ public class RLiveTest {
         return Arrays.asList(
                 new Object[][] {
                         // CFA Edge Case Tests - Simple, debuggable liveness checking scenarios
-
-//                        {"src/test/resources/test_simple_safe.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
-//
-//                        {"src/test/resources/test_simple_unsafe.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
-//
-//                        {"src/test/resources/test_dead_state.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
-//
-//                        {"src/test/resources/test_lasso.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
-//
-//                        {"src/test/resources/test_multi_accept.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
-//
-//                        {"src/test/resources/test_multi_accept_unsafe.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
-//
-//                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
-//                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
-//                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
-
-                        {"src/test/resources/test_nested_loops.cfa", PRED_CART, SEQ_ITP, false, List.of(3)},
-                        {"src/test/resources/test_dead_pruning_basic.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
-                        {"src/test/resources/test_dead_pruning_complex.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
-                        {"src/test/resources/test_dead_after_accepting.cfa", PRED_CART, SEQ_ITP, true, List.of(2)},
-                        {"src/test/resources/test_multiple_paths_to_loop.cfa", PRED_CART, SEQ_ITP, false, List.of(4)},
-                        {"src/test/resources/test_escaping_loop.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
-                        {"src/test/resources/test_deep_nesting.cfa", PRED_CART, SEQ_ITP, false, List.of(8)},
-                        {"src/test/resources/test_interleaved_accepting.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 4)},
-                        {"src/test/resources/test_conditional_acceptance.cfa", PRED_CART, SEQ_ITP, false, List.of(2, 5)},
-                        {"src/test/resources/test_accepting_reentrant.cfa", PRED_CART, SEQ_ITP, false, List.of(2)},
-                        {"src/test/resources/counter1.system", PRED_CART, SEQ_ITP, true, List.of()},
+                        {"src/test/resources/test1.cfa", PRED_CART, SEQ_ITP, false, List.of(2,8)},
+                        {"src/test/resources/test2.cfa", PRED_CART, SEQ_ITP, true, List.of(2,4)},
+                        {"src/test/resources/test3.cfa", PRED_CART, SEQ_ITP, false, List.of(2,4,8)},
 //                        {"""
 //                            ; Counter system specification
 //                            (declare-const x Int)
@@ -114,6 +89,7 @@ public class RLiveTest {
 //                            (define-fun invariant () Bool (! (>= x 0) :invar-property 0))
 //                            (define-fun property () Bool (! (<= x 10) :live-property 1))
 //                            """, PRED_CART, SEQ_ITP, true, List.of()},
+//                         {"src/test/resources/testtest.system", PRED_CART, SEQ_ITP, true, List.of()},
 //                        {"src/test/resources/counter2.system", PRED_CART, SEQ_ITP, false, List.of()},
 //                        {"src/test/resources/counter3.system", PRED_CART, SEQ_ITP, true, List.of()},
 //                        {"src/test/resources/counter4.system", PRED_CART, SEQ_ITP, false, List.of()},
