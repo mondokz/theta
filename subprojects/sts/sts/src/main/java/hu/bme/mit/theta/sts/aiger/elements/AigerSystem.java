@@ -48,6 +48,15 @@ public class AigerSystem {
         this.fairness = fairness;
     }
 
+    public AigerSystem(final List<AigerNode> nodes, final OutputVar output) {
+        this.nodes = nodes;
+        this.output = output;
+        this.constraints = Collections.emptyList();
+        this.fairness = Collections.emptyList();
+        this.justiceProperties = Collections.emptyList();
+    }
+
+
     public List<AigerNode> getNodes() {
         return nodes;
     }
