@@ -20,6 +20,9 @@ import hu.bme.mit.theta.analysis.*;
 import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.expl.ExplState;
+import hu.bme.mit.theta.common.logging.ConsoleLogger;
+import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -52,6 +55,8 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private Expr<BoolType> c;
     final boolean pruneEnabled;
     private final UCSolver ucSolver;
+    private final Logger logger;
+    private final Logger.Level level = Logger.Level.VERBOSE;
 
     public RLiveChecker(
             final STS monolithicExpr,
@@ -62,58 +67,101 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         this.baseChecker = Objects.requireNonNull(baseChecker);
         this.c = False();
         this.ucSolver = Z3LegacySolverFactory.getInstance().createUCSolver();
+        this.logger = new ConsoleLogger(Logger.Level.VERBOSE);
     }
 
 
     @Override
     public SafetyResult<Proof, Cex> check(final P input) {
         c = False();
+        logger.write(level, "r-live started with: ");
+        logger.write(level, pruneEnabled ? "pruning enabled \n" : "pruning disabled \n");
         while (true) {
 
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), monolithicExpr.getInit());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
 
             if (result.isUnsafe()) {
+                List<Trace<Valuation, StsAction>> traceList = new ArrayList<>();
                 Valuation s = extractReachedNotQState(result);
-                Set<Valuation> visited = new HashSet<>();
-                if (searchCex(s, visited)) {
-                    return SafetyResult.unsafe(result.asUnsafe().getCex(), result.asUnsafe().getProof());
+                Map<Valuation, Integer> visited = new HashMap<>();
+                var cex = searchCex(s, visited, traceList);
+
+                if (cex != null) {
+                    List<ExplState> states = new ArrayList<>(cex.stream().flatMap(trace -> trace.getStates().stream()).map(ExplState::of).toList());
+                    states.add(0, ExplState.of(ImmutableValuation.from(Collections.emptyMap())));
+                    List<StsAction> actions = Collections.nCopies(states.size() - 1, StsAction.of(monolithicExpr));
+                    return SafetyResult.unsafe(Trace.of(states, actions), result.asUnsafe().getProof());
                 }
             } else {
+                logger.write(level,"CANT find new bad state from start");
                 return SafetyResult.safe(result.asSafe().getProof());
             }
 
         }
     }
 
-    private boolean searchCex(final Valuation s, final Set<Valuation> visited) {
-        if (visited.contains(s)) {
-            return true;
+    private List<Trace<Valuation, StsAction>> searchCex(final Valuation s, Map<Valuation, Integer> visited, List<Trace<Valuation, StsAction>> traceList) {
+        int stateId;
+        if (visited.containsKey(s)) {
+            logger.write(level,"REVISITED bad state #%d", visited.get(s));
+            return traceList;
         } else {
-            visited.add(s);
+            stateId = visited.size() + 1;
+            if (stateId == 1){
+                logger.write(level,"NEW bad state found from INIT: #%d%n", visited.size() + 1);
+                visited.put(s, visited.size() + 1);
+            } else {
+                logger.write(level,"NEW bad state found: #%d%n", visited.size() + 1);
+                visited.put(s, visited.size() + 1);
+            }
+
         }
         while (true) {
 
             if (pruneEnabled) {
-                if (pruneDead(s)) {
-                    return false;
+                logger.write(level,"prune starting \n");
+                var result = pruneDead(s);
+                logger.write(level,"prune finished with result: %b \n", result);
+                if (result) {
+                    return null;
                 }
             }
 
             var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
-            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);;
+            logger.write(level,"searching new bad state from #%d \n", stateId);
+            SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
+            logger.write(level,"search finished: ");
+
 
             if (result.isUnsafe()) {
                 Valuation t = extractReachedNotQState(result);
-                if (searchCex(t, visited)) {
-                    return true;
+                List<Trace<Valuation, StsAction>> newTraceList = new ArrayList<>(traceList);
+                newTraceList.add(getTrace(result));
+                var cex = searchCex(t, visited, newTraceList);
+                if (cex != null) {
+                    return cex;
                 }
             } else {
                 var invariant = result.getProof();
                 c = Or(c, invariant.getInvariant());
-                return false;
+                logger.write(level,"backtrack from shoal \n");
+                return null;
             }
         }
+    }
+
+    private Trace<Valuation, StsAction> getTrace(SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result) {
+        List<Valuation> valuationList = new ArrayList<>();
+        result.asUnsafe().getCex().getStates().forEach(val -> {
+
+            Map<Decl<?>, LitExpr<?>> x = val.toMap().entrySet().stream()
+                    .filter(entry -> !entry.getKey().getName().contains("_temp"))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            valuationList.add(ImmutableValuation.from(x));
+        });
+        var actionList = result.asUnsafe().getCex().getActions().stream().map(x -> StsAction.of(monolithicExpr)).toList();
+        return Trace.of(valuationList, actionList);
     }
 
     private boolean pruneDead(final Valuation s) {
@@ -204,7 +252,8 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                         .build(sts);
 
         baseChecker.setConfig(config,sts);
-        return baseChecker.check();
+        var result =  baseChecker.check();
+        return result;
     }
 
 }

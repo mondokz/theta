@@ -28,9 +28,11 @@ import hu.bme.mit.theta.analysis.expr.StmtAction;
 import hu.bme.mit.theta.analysis.l2s.MonolithicL2SKt;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
+import hu.bme.mit.theta.core.decl.VarDecl;
 import hu.bme.mit.theta.core.stmt.Stmt;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
+import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.aiger.AigerParser2;
@@ -77,9 +79,9 @@ public class RLiveAigerTests {
 
     public static Map<String, String> createBenchmarkMap() {
         Map<String, String> benchmarkStatus = new HashMap<>();
-        benchmarkStatus.put("cucnt3", "safe");
-//            benchmarkStatus.put("out1", "safe");
-//            benchmarkStatus.put("out0", "unsafe");
+            benchmarkStatus.put("cucnt3", "safe");
+            benchmarkStatus.put("out1", "safe");
+            benchmarkStatus.put("out0", "unsafe");
 //        benchmarkStatus.put("6s201j18", "safe");
 //        benchmarkStatus.put("6s201j20", "safe");
 //        benchmarkStatus.put("6s201j34", "safe");
@@ -161,7 +163,7 @@ public class RLiveAigerTests {
 //        benchmarkStatus.put("cuasq11", "unsafe");
 //        benchmarkStatus.put("cuasq12", "unsafe");
 //        benchmarkStatus.put("cubakro", "unsafe");
-//        benchmarkStatus.put("cucab09", "safe");
+        benchmarkStatus.put("cucab09", "safe");
 //        benchmarkStatus.put("cucab10", "unsafe");
 //        benchmarkStatus.put("cucab11", "safe");
 //        benchmarkStatus.put("cucab12", "safe");
@@ -276,7 +278,7 @@ public class RLiveAigerTests {
 
     @Parameterized.Parameters(name = "{index}: {0} -> {1}")
     public static Collection<Object[]> aagFiles() {
-        File inputAigsDir = new File("C:\\Users\\mzalu\\Documents\\GitHub\\theta\\aags");
+        File inputAigsDir = new File("C:\\Users\\zz\\Documents\\GitHub\\theta\\aags");
         if (!inputAigsDir.exists() || !inputAigsDir.isDirectory()) {
             throw new RuntimeException("Directory not found: " + inputAigsDir.getAbsolutePath());
         }
@@ -308,9 +310,9 @@ public class RLiveAigerTests {
             final AigerSystem aigerSys = AigerParser2.parse(aagFilePath);
             var sts = AigerToSts.createLivenessSts(aigerSys, 0);
 
-
-            var rLiveChecker = new RLiveChecker<ExplPrec>(sts, new TempChecker<>(), true);
-            var result = rLiveChecker.check();
+            var checker = new RLiveChecker<ExplPrec>(sts, new TempChecker<>(), false);
+//            var checker = new KFairChecker<ExplPrec>(sts, new TempChecker<>());
+            var result = checker.check();
             String actualResult = result.isSafe() ? "safe" : "unsafe";
 
 
@@ -366,8 +368,13 @@ public class RLiveAigerTests {
         try {
             final AigerSystem aigerSys = AigerParser2.parse(aagFilePath);
             var tempSTS = AigerToSts.createLivenessSts(aigerSys, 0);
-
-            var mon = StsToMonolithicExprKt.toMonolithicExpr(tempSTS);
+            var indexingBuilder = VarIndexingFactory.basicIndexingBuilder(0);
+            for (VarDecl<?> v : tempSTS.getVars()) {
+                indexingBuilder.inc(v);
+            }
+            var mon = MonolithicL2SKt.createMonolithicL2S(new MonolithicExpr(
+                    tempSTS.getInit(),tempSTS.getTrans(), tempSTS.getProp(), indexingBuilder.build()
+            ));
 
 
             var solver = Z3LegacySolverFactory.getInstance().createSolver();

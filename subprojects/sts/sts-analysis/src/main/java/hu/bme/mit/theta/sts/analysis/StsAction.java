@@ -33,6 +33,9 @@ public final class StsAction implements ExprAction {
         checkNotNull(sts);
         this.trans = sts.getTrans();
     }
+    public static StsAction of(STS sts) {
+        return new StsAction(sts);
+    }
 
     @Override
     public Expr<BoolType> toExpr() {

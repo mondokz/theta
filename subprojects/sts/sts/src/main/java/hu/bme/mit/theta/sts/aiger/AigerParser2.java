@@ -49,7 +49,7 @@ public final class AigerParser2 {
      */
     public static AigerSystem parse(final String fileName) throws IOException {
         final BufferedReader br =
-                new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8));
+                new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_16));
 
         try {
             int nNodes;
