@@ -83,6 +83,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
             if (result.isUnsafe()) {
                 List<Trace<Valuation, StsAction>> traceList = new ArrayList<>();
+                traceList.add(getTrace(result));
                 Valuation s = extractReachedNotQState(result);
                 Map<Valuation, Integer> visited = new HashMap<>();
                 var cex = searchCex(s, visited, traceList);
