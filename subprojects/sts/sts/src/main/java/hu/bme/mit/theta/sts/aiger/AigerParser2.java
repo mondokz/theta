@@ -95,7 +95,8 @@ public final class AigerParser2 {
             for (int i = 0; i < nLatches; ++i) {
                 final String tokens[] = checkNotNull(br.readLine(), "Latch expected").split(" ");
                 final int varId = parseInt(tokens[0]) / 2;
-                final Latch latch = new Latch(i + 1, varId);
+                final boolean isTrueInit = tokens.length > 2 && tokens[2].equals("1");
+                final Latch latch = new Latch(i + 1, varId, isTrueInit);
                 latches.add(latch);
                 latchInputs.add(parseInt(tokens[1]));
                 nodes[varId] = latch;

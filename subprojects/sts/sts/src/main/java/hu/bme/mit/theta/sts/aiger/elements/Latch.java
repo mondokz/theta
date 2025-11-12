@@ -26,10 +26,16 @@ public class Latch extends AigerNode {
 
     private final Collection<AigerWire> outWires;
     private AigerWire inWire;
+    private final boolean isTrueInit;
+
+    public Latch(final int nr, final int varId, boolean isTrueInit) {
+        super(String.format("LATCH%d_v%d", nr, varId));
+        this.isTrueInit = isTrueInit;
+        this.outWires = new ArrayList<>();
+    }
 
     public Latch(final int nr, final int varId) {
-        super(String.format("LATCH%d_v%d", nr, varId));
-        this.outWires = new ArrayList<>();
+        this(nr, varId, false);
     }
 
     @Override
@@ -55,5 +61,9 @@ public class Latch extends AigerNode {
     public void addOutWire(final AigerWire outWire) {
         checkArgument(outWire.getSource().equals(this));
         outWires.add(outWire);
+    }
+
+    public boolean isTrueInit() {
+        return isTrueInit;
     }
 }

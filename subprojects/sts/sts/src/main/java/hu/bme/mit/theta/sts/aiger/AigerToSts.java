@@ -120,7 +120,7 @@ public final class AigerToSts {
             final boolean negated = (literal % 2) == 1;
             final AigerNode node = aigerSys.getNodes().get(varId);
             final Expr<BoolType> expr = vars.get(node).getRef();
-            final Expr<BoolType> fairnessExpr = negated ? Not(expr) : expr ;
+            final Expr<BoolType> fairnessExpr = !negated ? Not(expr) : expr ;
             fairnessExprs.add(fairnessExpr);
         }
         if (fairnessExprs.size() > 1 ) {
@@ -141,7 +141,7 @@ public final class AigerToSts {
             final Builder builder,
             final Map<AigerNode, VarDecl<BoolType>> vars,
             final Latch latch) {
-        builder.addInit(Not(vars.get(latch).getRef()));
+        builder.addInit(latch.isTrueInit() ? vars.get(latch).getRef() : Not(vars.get(latch).getRef()));
         final AigerWire inWire = latch.getInWire();
         final AigerNode source = inWire.getSource();
         final Expr<BoolType> lhs = Exprs.Prime(vars.get(latch).getRef());
