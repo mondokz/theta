@@ -24,6 +24,7 @@ include(
     "common/ltl",
     "common/ltl-cli",
     "common/rlive",
+    "common/rlive-cli",
 
     "frontends/c-frontend",
     "frontends/petrinet-frontend/petrinet-model",
