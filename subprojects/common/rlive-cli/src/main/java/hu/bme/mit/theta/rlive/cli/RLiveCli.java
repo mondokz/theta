@@ -22,14 +22,12 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.base.Stopwatch;
 import hu.bme.mit.theta.analysis.Cex;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.common.Utils;
-import hu.bme.mit.theta.core.type.booltype.BoolExprs;
-import hu.bme.mit.theta.core.utils.ExprUtils;
-import hu.bme.mit.theta.sts.STS;
-import hu.bme.mit.theta.sts.StsUtils;
 import hu.bme.mit.theta.sts.aiger.AigerParser2;
 import hu.bme.mit.theta.sts.aiger.AigerToSts;
 import hu.bme.mit.theta.sts.aiger.elements.AigerSystem;
+import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
 import hu.bme.mit.theta.sts.dsl.StsDslManager;
 import hu.bme.mit.theta.sts.dsl.StsSpec;
 import analysis.RLiveChecker;
@@ -70,29 +68,29 @@ public final class RLiveCli {
 
         try {
             final Stopwatch sw = Stopwatch.createStarted();
-            final STS sts = loadModel();
-            final RLiveChecker<ExplPrec> checker = new RLiveChecker<>(sts, new TempChecker<>(), prune);
+            final MonolithicExpr model = loadModel();
+            final RLiveChecker<ExplPrec> checker = new RLiveChecker<>(model, new TempChecker<>(), prune);
             final SafetyResult<?, ? extends Cex> result = checker.check(null);
             sw.stop();
-            printBasicResult(result, sts, sw.elapsed(TimeUnit.MILLISECONDS));
+            printBasicResult(result, model, sw.elapsed(TimeUnit.MILLISECONDS));
         } catch (Throwable t) {
             System.out.println("[ERROR] " + t.getClass().getSimpleName() + ": " + (t.getMessage() == null ? "" : t.getMessage()));
             System.exit(1);
         }
     }
 
-    private STS loadModel() throws Exception {
+    private MonolithicExpr loadModel() throws Exception {
         try {
             if (model.endsWith(".aag")) {
                 final AigerSystem aigerSystem = AigerParser2.parse(model);
-                return AigerToSts.createLivenessSts(aigerSystem, 0);
+                return StsToMonolithicExprKt.toMonolithicExpr(AigerToSts.createLivenessSts(aigerSystem, 0));
             } else {
                 try (InputStream is = new FileInputStream(model)) {
                     final StsSpec spec = StsDslManager.createStsSpec(is);
                     if (spec.getAllSts().size() != 1) {
                         throw new UnsupportedOperationException("STS contains multiple properties");
                     }
-                    return StsUtils.eliminateIte(Utils.singleElementOf(spec.getAllSts()));
+                    return StsToMonolithicExprKt.toMonolithicExpr(Utils.singleElementOf(spec.getAllSts()));
                 }
             }
         } catch (Exception ex) {
@@ -100,11 +98,10 @@ public final class RLiveCli {
         }
     }
 
-    private void printBasicResult(SafetyResult<?, ? extends Cex> status, STS sts, long timeMs) {
-        System.out.println("Result: " + (status.isSafe() ? "SAFE" : "UNSAFE"));
+    private void printBasicResult(SafetyResult<?, ? extends Cex> status, MonolithicExpr sts, long timeMs) {
+        System.out.println("\n Result: " + (status.isSafe() ? "SAFE" : "UNSAFE"));
         System.out.println("TimeMs: " + timeMs);
         System.out.println("Vars: " + sts.getVars().size());
-        System.out.println("Size: " + ExprUtils.nodeCountSize(BoolExprs.And(sts.getInit(), sts.getTrans())));
         if (status.isUnsafe()) {
             System.out.println("cex length: " + status.asUnsafe().getCex().length());
         }

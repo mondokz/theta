@@ -35,6 +35,7 @@ import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.aiger.AigerParser2;
 import hu.bme.mit.theta.sts.aiger.AigerToSts;
+import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
 import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
 import hu.bme.mit.theta.sts.dsl.StsDslManager;
@@ -115,7 +116,7 @@ public class RLiveTest {
                 new StsConfigBuilder(domain, refinement, Z3LegacySolverFactory.getInstance())
                         .build(sts);
 
-        var x = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(),true);
+        var x = new RLiveChecker<ExplPrec>(StsToMonolithicExprKt.toMonolithicExpr(sts),new TempChecker<>(),true);
 
         Assert.assertEquals(isSafe, x.check().isSafe());
     }
@@ -165,7 +166,7 @@ public class RLiveTest {
         }
 
 
-        var rLiveChecker = new RLiveChecker<ExplPrec>(sts,new TempChecker<>(), true);
+        var rLiveChecker = new RLiveChecker<ExplPrec>(StsToMonolithicExprKt.toMonolithicExpr(sts), new TempChecker<>(), true);
 
         Assert.assertEquals(isSafe, rLiveChecker.check().isSafe());
     }
@@ -178,7 +179,7 @@ public class RLiveTest {
             return;
         }
         final STS sts = AigerToSts.createSts(AigerParser2.parse(filePath));
-        var rLiveChecker = new RLiveChecker<ExplPrec>(sts, new TempChecker<>(), true);
+        var rLiveChecker = new RLiveChecker<ExplPrec>(StsToMonolithicExprKt.toMonolithicExpr(sts), new TempChecker<>(), true);
         Assert.assertEquals(isSafe, rLiveChecker.check().isSafe());
     }
 

@@ -46,6 +46,7 @@ import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.stringtemplate.v4.ST;
 
 import java.io.File;
 import java.util.*;
@@ -163,8 +164,8 @@ public class RLiveAigerTests {
 //        benchmarkStatus.put("cuasq11", "unsafe");
 //        benchmarkStatus.put("cuasq12", "unsafe");
 //        benchmarkStatus.put("cubakro", "unsafe");
-        benchmarkStatus.put("cucab09", "safe");
-//        benchmarkStatus.put("cucab10", "unsafe");
+//        benchmarkStatus.put("cucab09", "safe");
+        benchmarkStatus.put("cucab10", "unsafe");
 //        benchmarkStatus.put("cucab11", "safe");
 //        benchmarkStatus.put("cucab12", "safe");
 //        benchmarkStatus.put("cucab13", "safe");
@@ -308,9 +309,9 @@ public class RLiveAigerTests {
 
         try {
             final AigerSystem aigerSys = AigerParser2.parse(aagFilePath);
-            var sts = AigerToSts.createLivenessSts(aigerSys, 0);
+            var monolithicExpr = StsToMonolithicExprKt.toMonolithicExpr(AigerToSts.createLivenessSts(aigerSys, 0));
 
-            var checker = new RLiveChecker<ExplPrec>(sts, new TempChecker<>(), false);
+            var checker = new RLiveChecker<ExplPrec>(monolithicExpr, new TempChecker<>(), false);
 //            var checker = new KFairChecker<ExplPrec>(sts, new TempChecker<>());
             var result = checker.check();
             String actualResult = result.isSafe() ? "safe" : "unsafe";

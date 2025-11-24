@@ -20,6 +20,7 @@ import hu.bme.mit.theta.analysis.*;
 import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.analysis.expl.ExplState;
 import hu.bme.mit.theta.common.logging.ConsoleLogger;
 import hu.bme.mit.theta.common.logging.Logger;
@@ -40,6 +41,7 @@ import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.StsAction;
+import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
 import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
 
@@ -51,7 +53,7 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
 
 public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
     private final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker;
-    private final STS monolithicExpr;
+    private final MonolithicExpr monolithicExpr;
     private Expr<BoolType> c;
     final boolean pruneEnabled;
     private final UCSolver ucSolver;
@@ -59,7 +61,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private final Logger.Level level = Logger.Level.VERBOSE;
 
     public RLiveChecker(
-            final STS monolithicExpr,
+            final MonolithicExpr monolithicExpr,
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
             final boolean pruneEnabled) {
         this.pruneEnabled = pruneEnabled;
@@ -78,7 +80,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         logger.write(level, pruneEnabled ? "pruning enabled \n" : "pruning disabled \n");
         while (true) {
 
-            var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), monolithicExpr.getInit());
+            var sts = prepareExpressions(monolithicExpr.getTransExpr(), monolithicExpr.getPropExpr(), monolithicExpr.getInitExpr());
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
 
             if (result.isUnsafe()) {
@@ -91,7 +93,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 if (cex != null) {
                     List<ExplState> states = new ArrayList<>(cex.stream().flatMap(trace -> trace.getStates().stream()).map(ExplState::of).toList());
                     states.add(0, ExplState.of(ImmutableValuation.from(Collections.emptyMap())));
-                    List<StsAction> actions = Collections.nCopies(states.size() - 1, StsAction.of(monolithicExpr));
+                    List<StsAction> actions = Collections.nCopies(states.size() - 1, StsAction.of(StsToMonolithicExprKt.fromMonolithicExpr(monolithicExpr)));
                     return SafetyResult.unsafe(Trace.of(states, actions), result.asUnsafe().getProof());
                 }
             } else {
@@ -105,7 +107,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     private List<Trace<Valuation, StsAction>> searchCex(final Valuation s, Map<Valuation, Integer> visited, List<Trace<Valuation, StsAction>> traceList) {
         int stateId;
         if (visited.containsKey(s)) {
-            logger.write(level,"REVISITED bad state #%d", visited.get(s));
+            logger.write(level,"REVISITED bad state #%d ", visited.get(s));
             return traceList;
         } else {
             stateId = visited.size() + 1;
@@ -129,7 +131,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 }
             }
 
-            var sts = prepareExpressions(monolithicExpr.getTrans(), monolithicExpr.getProp(), s.toExpr());
+            var sts = prepareExpressions(monolithicExpr.getTransExpr(), monolithicExpr.getPropExpr(), s.toExpr());
             logger.write(level,"searching new bad state from #%d \n", stateId);
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
             logger.write(level,"search finished: ");
@@ -161,14 +163,14 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             valuationList.add(ImmutableValuation.from(x));
         });
-        var actionList = result.asUnsafe().getCex().getActions().stream().map(x -> StsAction.of(monolithicExpr)).toList();
+        var actionList = result.asUnsafe().getCex().getActions().stream().map(x -> StsAction.of(StsToMonolithicExprKt.fromMonolithicExpr(monolithicExpr))).toList();
         return Trace.of(valuationList, actionList);
     }
 
     private boolean pruneDead(final Valuation s) {
         while (true) {
             var cPrime = ExprUtils.applyPrimes(c, VarIndexingFactory.indexing(1));
-            var expr = And(s.toExpr(), monolithicExpr.getTrans(), Not(cPrime));
+            var expr = And(s.toExpr(), monolithicExpr.getTransExpr(), Not(cPrime));
             ucSolver.push();
             ucSolver.track(PathUtils.unfold(expr, 0));
             var status = ucSolver.check(); // avoid duplicate solver calls
@@ -177,7 +179,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 var l = PathUtils.unfold(PathUtils.extractValuation(model, 1).toExpr(), VarIndexingFactory.indexing(0));
                 ucSolver.pop();
                 ucSolver.push();
-                var tUnfold = PathUtils.unfold(monolithicExpr.getTrans(), 0);
+                var tUnfold = PathUtils.unfold(monolithicExpr.getTransExpr(), 0);
                 ucSolver.track(tUnfold);
                 var notCUnfold = PathUtils.unfold(Not(cPrime), 0);
                 ucSolver.track(notCUnfold);
