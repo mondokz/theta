@@ -204,7 +204,7 @@ public class LivenessStsCli {
     }
 
     private SafetyResult<?, ? extends Cex> runFair(final STS sts, final SolverFactory solverFactory) throws Exception {
-        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), KFairChecker.Mode.K_FAIR);
+        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), KFairChecker.Mode.FAIR);
         return checker.check();
     }
 
