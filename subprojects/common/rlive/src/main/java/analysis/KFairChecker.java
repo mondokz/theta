@@ -21,7 +21,6 @@ import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
-import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -32,13 +31,10 @@ import hu.bme.mit.theta.core.type.LitExpr;
 import hu.bme.mit.theta.core.type.abstracttype.EqExpr;
 import hu.bme.mit.theta.core.type.anytype.IteExpr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
-import hu.bme.mit.theta.core.type.booltype.SmartBoolExprs;
 import hu.bme.mit.theta.core.type.inttype.IntType;
-import hu.bme.mit.theta.core.utils.ExprSimplifier;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
-import hu.bme.mit.theta.solver.Solver;
 import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.utils.WithPushPop;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
@@ -56,18 +52,27 @@ import static hu.bme.mit.theta.core.type.booltype.SmartBoolExprs.*;
 import static hu.bme.mit.theta.core.type.inttype.IntExprs.*;
 
 public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P> {
+
+    public enum Mode {
+        K_FAIR,     // Uses both k-increment and loop detection
+        FAIR,       // Only loop detection (no k-increment)
+        K_LIVENESS  // Only k-increment (no loop detection)
+    }
+
     private final TempChecker<?, ?, ?> baseChecker;
     private STS monolithicExpr;
     private Expr<BoolType> wallStates;
     private Expr<BoolType> c;
     private UCSolver solver;
-    private UCSolver UCsolver;
     private VarDecl<IntType> violated;
+    private final Mode mode;
 
     public KFairChecker(
             final STS monolithicExpr,
-            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker) throws Exception {
+            final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
+            final Mode mode) throws Exception {
         this.baseChecker = baseChecker;
+        this.mode = mode;
         solver = Z3LegacySolverFactory.getInstance().createUCSolver();
         violated = Decls.Var("__violated", Int());
         var newInit = And(monolithicExpr.getInit(), Eq(violated.getRef(),Int(0)));
@@ -77,7 +82,6 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                                 IteExpr.of(ExprUtils.applyPrimes(monolithicExpr.getProp(), VarIndexingFactory.indexing(1)),Int(0),Int(1)))));
 
         this.monolithicExpr = new STS(newInit, newTrans, monolithicExpr.getProp());
-
     }
 
     @Override
@@ -85,7 +89,6 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         int k = 0;
         c = False();
         wallStates = False();
-
 
         while (true) {
             // k+ times violated
@@ -101,8 +104,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 }
             }
 
-
-            // reachability of (I, T, ¬q ∧ ¬C)
+            // REACHABILITY CHECK 1: Can we reach k violations?
             var sts = prepareReachabilityCheck(monolithicExpr.getInit(), monolithicExpr.getTrans(), prop);
             SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> result = checkReachability(sts);
 
@@ -110,9 +112,14 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                 return SafetyResult.safe(result.asSafe().getProof());
             }
 
+            if (mode == Mode.K_LIVENESS) {
+                k++;
+                continue;
+            }
+
             Valuation s = extractLastState(result);
 
-            //reachability of (T(s), T ∧ (W - W'), s)
+            // REACHABILITY CHECK 2: Reachability of (T(s), T ∧ (W <-> W'), s)
             sts = prepareReachabilityCheck2(s.toExpr(), And(monolithicExpr.getTrans(), Iff(wallStates, ExprUtils.applyPrimes(wallStates, VarIndexingFactory.indexing(1)))), s.toExpr());
             result = checkReachability(sts);
 
@@ -125,13 +132,15 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
                 Expr<BoolType> g = generalizingNoloop(s, d);
                 c = Or(c, g);
-                k++;
+
+                if (mode != Mode.FAIR) {
+                    k++;
+                }
             }
         }
     }
 
     private Expr<BoolType> generalizingNoloop(Valuation s, Expr<BoolType> d) {
-
         var tUnfold = PathUtils.unfold(monolithicExpr.getTrans(), 0);
         var notdUnfold = PathUtils.unfold(Not(ExprUtils.applyPrimes(d, VarIndexingFactory.indexing(1))), 0);
         var sUnfold = PathUtils.unfold(s.toExpr(), 0);
@@ -141,7 +150,6 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         Expr<BoolType> g2;
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-
             solver.track(tUnfold);
             solver.track(notdUnfold);
             solver.track(sUnfold);
@@ -154,7 +162,6 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
         }
 
         try (WithPushPop wpp = new WithPushPop(solver)) {
-
             solver.track(dUnfold);
             solver.track(sUnfold);
 
@@ -166,8 +173,6 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
         return And(g1, g2);
     }
-
-
 
     private STS prepareReachabilityCheck(Expr<BoolType> init, Expr<BoolType> trans, Expr<BoolType> prop) {
         return new STS(init, trans, prop);

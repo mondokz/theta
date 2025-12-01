@@ -120,7 +120,7 @@ public final class AigerToSts {
             final boolean negated = (literal % 2) == 1;
             final AigerNode node = aigerSys.getNodes().get(varId);
             final Expr<BoolType> expr = vars.get(node).getRef();
-            final Expr<BoolType> fairnessExpr = !negated ? Not(expr) : expr ;
+            final Expr<BoolType> fairnessExpr = negated ? Not(expr) : expr ;
             fairnessExprs.add(fairnessExpr);
         }
         if (fairnessExprs.size() > 1 ) {

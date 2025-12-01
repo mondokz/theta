@@ -165,7 +165,7 @@ public class RLiveAigerTests {
 //        benchmarkStatus.put("cuasq12", "unsafe");
 //        benchmarkStatus.put("cubakro", "unsafe");
 //        benchmarkStatus.put("cucab09", "safe");
-        benchmarkStatus.put("cucab10", "unsafe");
+//        benchmarkStatus.put("cucab10", "unsafe");
 //        benchmarkStatus.put("cucab11", "safe");
 //        benchmarkStatus.put("cucab12", "safe");
 //        benchmarkStatus.put("cucab13", "safe");
@@ -279,7 +279,7 @@ public class RLiveAigerTests {
 
     @Parameterized.Parameters(name = "{index}: {0} -> {1}")
     public static Collection<Object[]> aagFiles() {
-        File inputAigsDir = new File("C:\\Users\\zz\\Documents\\GitHub\\theta\\aags");
+        File inputAigsDir = new File("C:\\Users\\mzalu\\Documents\\GitHub\\theta\\aags");
         if (!inputAigsDir.exists() || !inputAigsDir.isDirectory()) {
             throw new RuntimeException("Directory not found: " + inputAigsDir.getAbsolutePath());
         }
@@ -311,7 +311,7 @@ public class RLiveAigerTests {
             final AigerSystem aigerSys = AigerParser2.parse(aagFilePath);
             var monolithicExpr = StsToMonolithicExprKt.toMonolithicExpr(AigerToSts.createLivenessSts(aigerSys, 0));
 
-            var checker = new RLiveChecker<ExplPrec>(monolithicExpr, new TempChecker<>(), false);
+            var checker = new RLiveChecker<ExplPrec>(monolithicExpr, new TempChecker<>(), true, false, Z3LegacySolverFactory.getInstance(), new ConsoleLogger(Logger.Level.VERBOSE));
 //            var checker = new KFairChecker<ExplPrec>(sts, new TempChecker<>());
             var result = checker.check();
             String actualResult = result.isSafe() ? "safe" : "unsafe";

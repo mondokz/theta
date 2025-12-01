@@ -37,6 +37,7 @@ import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.core.utils.ExprUtils;
 import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
+import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.UCSolver;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
@@ -58,24 +59,33 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     final boolean pruneEnabled;
     private final UCSolver ucSolver;
     private final Logger logger;
-    private final Logger.Level level = Logger.Level.VERBOSE;
+    private final Logger.Level level = Logger.Level.MAINSTEP;
+    private boolean useIC3checker;
+    private SolverFactory solverFactory;
 
     public RLiveChecker(
             final MonolithicExpr monolithicExpr,
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
-            final boolean pruneEnabled) {
+            final boolean pruneEnabled,
+            final boolean useIC3,
+            final SolverFactory solverFactory,
+            final Logger logger) {
         this.pruneEnabled = pruneEnabled;
-        this.monolithicExpr = Objects.requireNonNull(monolithicExpr);
+        this.monolithicExpr = new MonolithicExpr(monolithicExpr.getInitExpr(), monolithicExpr.getTransExpr(), Not(monolithicExpr.getPropExpr()));
         this.baseChecker = Objects.requireNonNull(baseChecker);
         this.c = False();
-        this.ucSolver = Z3LegacySolverFactory.getInstance().createUCSolver();
-        this.logger = new ConsoleLogger(Logger.Level.VERBOSE);
+
+        this.logger = logger;
+        this.useIC3checker = useIC3;
+        this.solverFactory = solverFactory;
+        this.ucSolver = solverFactory.createUCSolver();
     }
 
 
     @Override
     public SafetyResult<Proof, Cex> check(final P input) {
         c = False();
+        System.out.println("rlive started");
         logger.write(level, "r-live started with: ");
         logger.write(level, pruneEnabled ? "pruning enabled \n" : "pruning disabled \n");
         while (true) {
@@ -124,7 +134,12 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
             if (pruneEnabled) {
                 logger.write(level,"prune starting \n");
-                var result = pruneDead(s);
+                boolean result = false;
+                try {
+                    result = pruneDead(s);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
                 logger.write(level,"prune finished with result: %b \n", result);
                 if (result) {
                     return null;
@@ -173,7 +188,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             var expr = And(s.toExpr(), monolithicExpr.getTransExpr(), Not(cPrime));
             ucSolver.push();
             ucSolver.track(PathUtils.unfold(expr, 0));
-            var status = ucSolver.check(); // avoid duplicate solver calls
+            var status = ucSolver.check();
             if (status.isSat()) {
                 var model = ucSolver.getModel();
                 var l = PathUtils.unfold(PathUtils.extractValuation(model, 1).toExpr(), VarIndexingFactory.indexing(0));
@@ -197,7 +212,6 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
                     uc.remove(notCUnfold);
                     c = Or(c, PathUtils.foldin(And(uc), 0));
                     ucSolver.pop();
-                    // continue to attempt more pruning
                 } else {
                     ucSolver.pop();
                     return false;
@@ -250,6 +264,9 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     }
 
     private SafetyResult<InvariantForRlive, Trace<Valuation, StsAction>> checkReachability(STS sts) {
+        if (useIC3checker) {
+            //TODO merge and use ic3, for now fallback to cegar
+        }
         StsConfig<? extends State, ? extends Action, ? extends Prec> config =
                 new StsConfigBuilder(StsConfigBuilder.Domain.EXPL, StsConfigBuilder.Refinement.FW_BIN_ITP, Z3LegacySolverFactory.getInstance())
                         .build(sts);

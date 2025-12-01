@@ -19,17 +19,16 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":theta-sts"))
     implementation(project(":theta-common"))
     implementation(project(":theta-core"))
     implementation(project(":theta-analysis"))
-    implementation(project(":theta-sts"))
-    implementation(project(":theta-sts-analysis"))
-    implementation(project(":theta-rlive"))
     implementation(project(":theta-solver"))
+    implementation(project(":theta-sts-analysis"))
     implementation(project(":theta-solver-z3-legacy"))
+    implementation(project(":theta-rlive"))
 }
 
 application {
-    mainClass.set("hu.bme.mit.theta.rlive.cli.RLiveCli")
+    mainClass.set("hu.bme.mit.theta.sts.cli.LivenessStsCli")
 }
-

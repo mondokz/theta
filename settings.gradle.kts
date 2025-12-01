@@ -40,6 +40,7 @@ include(
     "sts/sts",
     "sts/sts-analysis",
     "sts/sts-cli",
+    "sts/sts-liveness-cli",
 
     "xcfa/xcfa",
     "xcfa/cat",
