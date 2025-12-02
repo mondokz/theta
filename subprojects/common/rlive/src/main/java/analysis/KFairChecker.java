@@ -21,6 +21,7 @@ import hu.bme.mit.theta.analysis.algorithm.Proof;
 import hu.bme.mit.theta.analysis.algorithm.SafetyChecker;
 import hu.bme.mit.theta.analysis.algorithm.SafetyResult;
 import hu.bme.mit.theta.analysis.algorithm.arg.ARG;
+import hu.bme.mit.theta.analysis.algorithm.bounded.MonolithicExpr;
 import hu.bme.mit.theta.core.decl.Decl;
 import hu.bme.mit.theta.core.decl.Decls;
 import hu.bme.mit.theta.core.decl.VarDecl;
@@ -61,6 +62,7 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
 
     private final TempChecker<?, ?, ?> baseChecker;
     private STS monolithicExpr;
+    private STS tempMonolithicExpr;
     private Expr<BoolType> wallStates;
     private Expr<BoolType> c;
     private UCSolver solver;
@@ -71,17 +73,18 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             final STS monolithicExpr,
             final TempChecker<P, InvariantForRlive, Trace<Valuation, StsAction>> baseChecker,
             final Mode mode) throws Exception {
+        this.tempMonolithicExpr = new STS(monolithicExpr.getInit(), monolithicExpr.getTrans(), Not(monolithicExpr.getProp()));
         this.baseChecker = baseChecker;
         this.mode = mode;
         solver = Z3LegacySolverFactory.getInstance().createUCSolver();
         violated = Decls.Var("__violated", Int());
-        var newInit = And(monolithicExpr.getInit(), Eq(violated.getRef(),Int(0)));
-        var newTrans = And(monolithicExpr.getTrans(),
+        var newInit = And(tempMonolithicExpr.getInit(), Eq(violated.getRef(),Int(0)));
+        var newTrans = And(tempMonolithicExpr.getTrans(),
                 Eq(ExprUtils.applyPrimes(violated.getRef(),VarIndexingFactory.indexing(1)),
                         Add(violated.getRef(),
-                                IteExpr.of(ExprUtils.applyPrimes(monolithicExpr.getProp(), VarIndexingFactory.indexing(1)),Int(0),Int(1)))));
+                                IteExpr.of(ExprUtils.applyPrimes(tempMonolithicExpr.getProp(), VarIndexingFactory.indexing(1)),Int(0),Int(1)))));
 
-        this.monolithicExpr = new STS(newInit, newTrans, monolithicExpr.getProp());
+        this.monolithicExpr = new STS(newInit, newTrans, tempMonolithicExpr.getProp());
     }
 
     @Override

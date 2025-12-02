@@ -59,7 +59,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
     final boolean pruneEnabled;
     private final UCSolver ucSolver;
     private final Logger logger;
-    private final Logger.Level level = Logger.Level.MAINSTEP;
+    private final Logger.Level level = Logger.Level.SUBSTEP;
     private boolean useIC3checker;
     private SolverFactory solverFactory;
 

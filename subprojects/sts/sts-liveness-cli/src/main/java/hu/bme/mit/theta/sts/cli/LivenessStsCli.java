@@ -15,6 +15,7 @@
  */
 package hu.bme.mit.theta.sts.cli;
 
+import analysis.TempChecker;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -36,6 +37,9 @@ import hu.bme.mit.theta.core.decl.VarDecl;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.SolverManager;
+import hu.bme.mit.theta.solver.javasmt.JavaSMTSolverManager;
+import hu.bme.mit.theta.solver.smtlib.SmtLibSolverManager;
+import hu.bme.mit.theta.solver.z3legacy.Z3SolverManager;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.aiger.AigerParser2;
@@ -48,10 +52,11 @@ import hu.bme.mit.theta.sts.dsl.StsDslManager;
 import hu.bme.mit.theta.sts.dsl.StsSpec;
 import analysis.KFairChecker;
 import analysis.RLiveChecker;
-import analysis.TempChecker;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -91,7 +96,7 @@ public class LivenessStsCli {
     @Parameter(names = {"--solver"}, description = "Solver")
     String solver = "Z3";
 
-    @Parameter(names = {"--prune"}, description = "Enable pruning for rlive")
+    @Parameter(names = {"--prune"}, description = "Enable pruning for rlive", arity=1)
     boolean prune = true;
 
     @Parameter(
@@ -103,6 +108,9 @@ public class LivenessStsCli {
             names = {"--benchmark"},
             description = "Benchmark mode")
     Boolean benchmarkMode = false;
+
+    @Parameter(names = {"--smt-home"}, description = "Path to SMT solver home directory")
+    String smtHome;
 
     private Logger logger;
 
@@ -120,7 +128,7 @@ public class LivenessStsCli {
                 .addObject(this)
                 .programName(JAR_NAME)
                 .build();
-        logger = benchmarkMode ? NullLogger.getInstance() : new ConsoleLogger(logLevel);
+
         try {
             jCommander.parse(args);
         } catch (ParameterException ex) {
@@ -130,6 +138,7 @@ public class LivenessStsCli {
         }
 
         try {
+            logger = benchmarkMode ? NullLogger.getInstance() : new ConsoleLogger(logLevel);
             final Stopwatch sw = Stopwatch.createStarted();
             final STS sts = loadModel();
             final SolverFactory solverFactory = getSolverFactory();
@@ -150,7 +159,6 @@ public class LivenessStsCli {
             } else {
                 try (InputStream is = new FileInputStream(model)) {
                     final StsSpec spec = StsDslManager.createStsSpec(is);
-                    System.out.println("runnin3");
                     if (spec.getAllSts().size() != 1) {
                         throw new UnsupportedOperationException("STS contains multiple properties");
                     }
@@ -164,8 +172,8 @@ public class LivenessStsCli {
 
     private SolverFactory getSolverFactory() throws Exception {
         try {
-            //TODO SolverManager.resolveSolverFactory didnt work
-            return Z3LegacySolverFactory.getInstance();
+            registerSolverManagers();
+            return SolverManager.resolveSolverFactory(solver);
         } catch (Exception ex) {
             throw new Exception("Could not resolve solver '" + solver + "': " + ex.getMessage(), ex);
         }
@@ -186,6 +194,13 @@ public class LivenessStsCli {
             default:
                 throw new UnsupportedOperationException("Algorithm " + algorithm + " not supported");
         }
+    }
+
+    private void registerSolverManagers() throws IOException {
+        SolverManager.registerSolverManager(hu.bme.mit.theta.solver.z3.Z3SolverManager.create());
+        SolverManager.registerSolverManager(hu.bme.mit.theta.solver.z3legacy.Z3SolverManager.create());
+        SolverManager.registerSolverManager(SmtLibSolverManager.create(smtHome == null ? SmtLibSolverManager.HOME.toFile().toPath() : Path.of(smtHome), logger));
+        SolverManager.registerSolverManager(JavaSMTSolverManager.create());
     }
 
     private SafetyResult<?, ? extends Cex> runRLive(final STS sts, final SolverFactory solverFactory) throws Exception {
@@ -236,7 +251,7 @@ public class LivenessStsCli {
     private SafetyResult<?, ? extends Cex> runL2SWithCegar(final MonolithicExpr mon, final STS sts, final SolverFactory solverFactory) throws Exception {
         StsConfig<? extends State, ? extends Action, ? extends Prec> config =
                 new StsConfigBuilder(StsConfigBuilder.Domain.EXPL, StsConfigBuilder.Refinement.FW_BIN_ITP, Z3LegacySolverFactory.getInstance())
-                        .build(sts);
+                        .build(StsToMonolithicExprKt.fromMonolithicExpr(mon));
 
         return config.check();
     }
@@ -274,16 +289,17 @@ public class LivenessStsCli {
     }
 
     private void printResult(final SafetyResult<?, ? extends Cex> status, final STS sts, final long timeMs) {
-            System.out.println("========================================");
-            System.out.println("Result: " + (status.isSafe() ? "SAFE" : "UNSAFE"));
-            System.out.println("Algorithm: " + algorithm);
-            System.out.println("Checker: " + safetyChecker);
-            System.out.println("Solver: " + solver);
-            System.out.println("Time (ms): " + timeMs);
-            System.out.println("Variables: " + sts.getVars().size());
+            logger.write(Logger.Level.RESULT, "========================================\n");
+            logger.write(Logger.Level.RESULT, "Result: %s\n", status.toString());
+            logger.write(Logger.Level.RESULT, "Algorithm: %s\n", algorithm);
+            logger.write(Logger.Level.RESULT, "Checker: %s\n", safetyChecker);
+            logger.write(Logger.Level.RESULT, "Solver: %s\n", solver);
+            logger.write(Logger.Level.RESULT, "Time (ms): %d\n", timeMs);
+            logger.write(Logger.Level.RESULT, "Variables: %d\n", sts.getVars().size());
             if (status.isUnsafe()) {
+                logger.write(Logger.Level.RESULT, "Status detail: unsafe\n");
             }
-            System.out.println("========================================");
+            logger.write(Logger.Level.RESULT, "========================================\n");
     }
 
     private void printError(final Throwable ex) {
@@ -292,4 +308,3 @@ public class LivenessStsCli {
         System.err.println("========================================");
     }
 }
-
