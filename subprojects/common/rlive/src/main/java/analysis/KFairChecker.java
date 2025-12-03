@@ -157,7 +157,10 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             solver.track(notdUnfold);
             solver.track(sUnfold);
 
-            assert solver.check().isUnsat();
+            boolean isSat = solver.check().isSat();
+            if (isSat) {
+                throw new IllegalStateException("Expected UNSAT but got SAT");
+            }
             var uc = new ArrayList<>(solver.getUnsatCore());
             uc.remove(tUnfold);
             uc.remove(notdUnfold);
@@ -168,7 +171,10 @@ public class KFairChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             solver.track(dUnfold);
             solver.track(sUnfold);
 
-            assert solver.check().isUnsat();
+            boolean isSat = solver.check().isSat();
+            if (isSat) {
+                throw new IllegalStateException("Expected UNSAT but got SAT");
+            }
             var uc = new ArrayList<>(solver.getUnsatCore());
             uc.remove(dUnfold);
             g2 = PathUtils.foldin(And(uc),0);
