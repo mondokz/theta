@@ -21,33 +21,25 @@ import static hu.bme.mit.theta.core.type.inttype.IntExprs.Int;
 import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Domain.*;
 import static hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder.Refinement.SEQ_ITP;
 
-import hu.bme.mit.theta.analysis.Action;
-import hu.bme.mit.theta.analysis.Prec;
-import hu.bme.mit.theta.analysis.State;
 import hu.bme.mit.theta.analysis.expl.ExplPrec;
 import hu.bme.mit.theta.cfa.CFA;
 import hu.bme.mit.theta.cfa.analysis.CfaToMonolithicExprKt;
 import hu.bme.mit.theta.cfa.dsl.CfaDslManager;
 import hu.bme.mit.theta.common.Utils;
+import hu.bme.mit.theta.common.logging.ConsoleLogger;
+import hu.bme.mit.theta.common.logging.Logger;
 import hu.bme.mit.theta.core.type.Expr;
 import hu.bme.mit.theta.core.type.booltype.BoolType;
 import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
-import hu.bme.mit.theta.sts.aiger.AigerParser2;
-import hu.bme.mit.theta.sts.aiger.AigerToSts;
-import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
-import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
-import hu.bme.mit.theta.sts.analysis.config.StsConfig;
 import hu.bme.mit.theta.sts.analysis.config.StsConfigBuilder;
 import hu.bme.mit.theta.sts.dsl.StsDslManager;
 import hu.bme.mit.theta.sts.dsl.StsSpec;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import hu.bme.mit.theta.sts.vmt.VmtToStsConverter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,7 +117,7 @@ public class RLiveTest {
             sts = Utils.singleElementOf(spec.getAllSts());
         }
 
-        var kFairChecker = new KFairChecker<ExplPrec>(sts,new TempChecker<>(), KFairChecker.Mode.K_FAIR);
+        var kFairChecker = new KFairChecker<ExplPrec>(sts,new TempChecker<>(), Z3LegacySolverFactory.getInstance(), KFairChecker.Mode.K_FAIR, new ConsoleLogger(Logger.Level.VERBOSE));
 
         Assert.assertEquals(isSafe, kFairChecker.check().isSafe());
 

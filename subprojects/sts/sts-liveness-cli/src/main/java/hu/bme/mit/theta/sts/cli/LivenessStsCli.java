@@ -209,17 +209,17 @@ public class LivenessStsCli {
     }
 
     private SafetyResult<?, ? extends Cex> runKFair(final STS sts, final SolverFactory solverFactory) throws Exception {
-        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), KFairChecker.Mode.K_FAIR);
+        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), solverFactory, KFairChecker.Mode.K_FAIR, logger);
         return checker.check();
     }
 
     private SafetyResult<?, ? extends Cex> runKLiveness(final STS sts, final SolverFactory solverFactory) throws Exception {
-        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), KFairChecker.Mode.K_LIVENESS);
+        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), solverFactory, KFairChecker.Mode.K_LIVENESS, logger);
         return checker.check();
     }
 
     private SafetyResult<?, ? extends Cex> runFair(final STS sts, final SolverFactory solverFactory) throws Exception {
-        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), KFairChecker.Mode.FAIR);
+        final KFairChecker<ExplPrec> checker = new KFairChecker<>(sts, new TempChecker<>(), solverFactory, KFairChecker.Mode.FAIR, logger);
         return checker.check();
     }
 

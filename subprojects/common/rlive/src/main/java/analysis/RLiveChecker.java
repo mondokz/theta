@@ -39,7 +39,6 @@ import hu.bme.mit.theta.core.utils.PathUtils;
 import hu.bme.mit.theta.core.utils.indexings.VarIndexingFactory;
 import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.UCSolver;
-import hu.bme.mit.theta.solver.z3legacy.Z3LegacySolverFactory;
 import hu.bme.mit.theta.sts.STS;
 import hu.bme.mit.theta.sts.analysis.StsAction;
 import hu.bme.mit.theta.sts.analysis.StsToMonolithicExprKt;
@@ -268,7 +267,7 @@ public class RLiveChecker<P extends Prec> implements SafetyChecker<Proof, Cex, P
             //TODO merge and use ic3, for now fallback to cegar
         }
         StsConfig<? extends State, ? extends Action, ? extends Prec> config =
-                new StsConfigBuilder(StsConfigBuilder.Domain.EXPL, StsConfigBuilder.Refinement.FW_BIN_ITP, Z3LegacySolverFactory.getInstance())
+                new StsConfigBuilder(StsConfigBuilder.Domain.EXPL, StsConfigBuilder.Refinement.FW_BIN_ITP, solverFactory)
                         .build(sts);
 
         baseChecker.setConfig(config,sts);
