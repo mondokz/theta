@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package hu.bme.mit.theta.solver.smtlib.impl.golem;
+package hu.bme.mit.theta.solver.smtlib.impl.eldarica;
 
 import static hu.bme.mit.theta.common.OsHelper.Architecture.X64;
 import static hu.bme.mit.theta.common.OsHelper.OperatingSystem.LINUX;
@@ -24,67 +24,54 @@ import hu.bme.mit.theta.solver.SolverFactory;
 import hu.bme.mit.theta.solver.smtlib.solver.installer.SmtLibSolverInstaller;
 import hu.bme.mit.theta.solver.smtlib.solver.installer.SmtLibSolverInstallerException;
 import hu.bme.mit.theta.solver.smtlib.utils.Compress;
-import hu.bme.mit.theta.solver.smtlib.utils.Compress.CompressionType;
 import hu.bme.mit.theta.solver.smtlib.utils.SemVer;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GolemSmtLibSolverInstaller extends SmtLibSolverInstaller.Default {
+/*
+This is a dependency of Eldarica which is not included in the binary.
+ */
+public class YicesSmtLibSolverInstaller extends SmtLibSolverInstaller.Default {
 
     private final List<SemVer.VersionDecoder> versions;
 
-    public GolemSmtLibSolverInstaller(final Logger logger) {
+    public YicesSmtLibSolverInstaller(final Logger logger) {
         super(logger);
 
         versions = new ArrayList<>();
         versions.add(
-                SemVer.VersionDecoder.create(SemVer.of("0.8.1"))
-                        .addString(LINUX, X64, "x64-linux.tar.bz2")
-                        .build());
-        versions.add(
-                SemVer.VersionDecoder.create(SemVer.of("0.5.0"))
-                        .addString(LINUX, X64, "0.5.0-x64-linux.tar.bz2")
+                SemVer.VersionDecoder.create(SemVer.of("2.1"))
+                        .addString(LINUX, X64, "zip")
                         .build());
     }
 
     @Override
     protected String getSolverName() {
-        return "golem";
+        return "yices";
     }
 
     @Override
     protected void installSolver(final Path installDir, final String version)
             throws SmtLibSolverInstallerException {
-        final var semVer = SemVer.of(version);
-        String archStr = null;
-
-        for (final var versionDecoder : versions) {
-            if (semVer.compareTo(versionDecoder.getVersion()) >= 0) {
-                archStr = versionDecoder.getOsArchString(OsHelper.getOs(), OsHelper.getArch());
-                break;
-            }
-        }
-        if (archStr == null) {
-            throw new SmtLibSolverInstallerException(
-                    String.format(
-                            "%s on operating system %s and architecture %s is not supported",
-                            getSolverName(), OsHelper.getOs(), OsHelper.getArch()));
-        }
-
         final var downloadUrl =
                 URI.create(
                         String.format(
-                                "https://github.com/usi-verification-and-security/golem/releases/download/v%s/golem-%s",
-                                version, archStr));
+                                "https://yices.csl.sri.com/old/binaries/yices-%s-x86_64-unknown-linux-gnu-static-gmp.tar.gz",
+                                version));
 
         logger.write(Logger.Level.MAINSTEP, "Starting download (%s)...\n", downloadUrl.toString());
         try (final var inputStream = downloadUrl.toURL().openStream()) {
-            Compress.extractTarbomb(inputStream, installDir, CompressionType.TARBZ2);
-            installDir.resolve(getSolverBinaryName()).toFile().setExecutable(true, true);
-        } catch (Exception e) {
+            Compress.extract(inputStream, installDir, Compress.CompressionType.TARGZ);
+            installDir
+                    .resolve("bin")
+                    .resolve(getSolverBinaryName())
+                    .toFile()
+                    .setExecutable(true, true);
+        } catch (IOException e) {
             throw new SmtLibSolverInstallerException(e);
         }
 
@@ -97,34 +84,26 @@ public class GolemSmtLibSolverInstaller extends SmtLibSolverInstaller.Default {
     }
 
     @Override
-    protected String[] getDefaultSolverArgs(String version) {
-        if (SemVer.of(version).compareTo(SemVer.of("0.8.1")) >= 0) {
-            return new String[] {"--print-witness" /*, "-portfolio"*/};
-        }
-        return new String[] {"--print-witness"};
+    protected SolverFactory getSolverFactory(
+            Path installDir, String version, Path solverPath, String[] args)
+            throws SmtLibSolverInstallerException {
+        throw new UnsupportedOperationException("Yices cannot be started.");
     }
 
     @Override
-    public SolverFactory getSolverFactory(
-            final Path installDir,
-            final String version,
-            final Path solverPath,
-            final String[] solverArgs)
-            throws SmtLibSolverInstallerException {
-        final var solverFilePath =
-                solverPath != null ? solverPath : installDir.resolve(getSolverBinaryName());
-        return GolemSmtLibSolverFactory.create(solverFilePath, solverArgs, version.equals("0.5.0"));
+    protected String[] getDefaultSolverArgs(String version) {
+        return new String[] {};
     }
 
     @Override
     public List<String> getSupportedVersions() {
-        return Arrays.asList("0.5.0", "0.8.1", "0.9.0");
+        return Arrays.asList("1.0.40");
     }
 
     private String getSolverBinaryName() {
         switch (OsHelper.getOs()) {
             case LINUX:
-                return "golem";
+                return "yices";
             default:
                 throw new AssertionError();
         }
